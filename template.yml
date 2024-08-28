@@ -155,7 +155,7 @@ Resources:
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt TodoCreateTaskPOST.Arn
+      FunctionName: !GetAtt TodoCreateTask.Arn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/
@@ -175,7 +175,7 @@ Resources:
   Task:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: "EcommerceSignup"
+      TableName: "Todo"
       AttributeDefinitions:
         - AttributeName: "Id"
           AttributeType: "S"
@@ -189,4 +189,4 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: "The endpoint of the API Gateway"
-    Value: !Sub "https://${TodoApi}.execute-api.${AWS::Region}.amazonaws.com/todo/TodoCreateTaskPOST"
+    Value: !Sub "https://${TodoApi}.execute-api.${AWS::Region}.amazonaws.com/todo/TodoCreateTask"
