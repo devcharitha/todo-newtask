@@ -22,7 +22,7 @@ Resources:
         S3Bucket: todo-task
         S3Key: todo-task.zip
 
-   TodoUpdateTask :
+  TodoUpdateTask :
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: Todo-UpdateTask-UPDATE 
@@ -33,7 +33,7 @@ Resources:
         S3Bucket: todo-task
         S3Key: todo-task.zip  
   
-   TodoDeleteTask:
+  TodoDeleteTask:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: Todo-DeleteTask-DELETE
