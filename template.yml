@@ -125,7 +125,7 @@ Resources:
               responses:
                 '200': {}
               x-amazon-apigateway-integration:
-                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoDeleteTaskDELETE.Arn}/invocations"
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoDeleteTask.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
                   httpMethod: "DELETE"
                   type: "aws_proxy"
