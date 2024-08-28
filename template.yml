@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  LambdaFunction1:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Todo-CreateTask-post 
+      Runtime: nodejs20.x
+      Role: !GetAtt lambdaExecutionRole.Arn
+      Handler: todo-newtask/dist/controller/todo-createTask.handler
+      Code:
+        S3Bucket: Todo-task
+        S3Key: .zip 
+  
+  lambdaExecutionRole:
+    Type : AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'LambdaBasicExecution'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+  ngAuthorization:
+    Type : AWS::ApiGateway::RestApi
+    Properties :
+      Body :
+        openapi: 3.0.0
+        info:
+          version: '1.0'
+          title: Authorization
+          description: sends data for authorized user
+        paths: 
+          /authorization:
+            post:
+              summary: Send Token
+              description: Authenticate user using email and password, return JWT token
+              tags:
+                - Authorization Journey
+              requestBody:
+                required: true
+                content:
+                  application/vnd.api+json:
+                    schema:
+                      $ref: '#/components/schemas/NgAuthorization'
+              responses:
+                "200":
+                  description: Authorized successfully
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                            example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+                          typeofToken: 
+                            type: string
+                            example: bearer
+                          expiresIn: 
+                            type: number
+                            example: 6000 
+                          scope: 
+                            type: string
+                            example: read admin
+                            description: Authorization token          
+                "401":
+                  description: Unauthorized
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/UnauthorizedError'        
+                "404":
+                  description: User not found
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/NotFoundError'  
+              x-amazon-apigateway-integration:
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${authorization.Arn}/invocations"
+                  passthroughBehavior: "when_no_match"
+                  httpMethod: "POST"
+                  type: "aws_proxy"           
+        components:
+          schemas:
+            NgAuthorization:
+              type: object
+              description: user Object     
+              properties:
+                emailId:
+                  type: string
+                  pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                  example: 'user@example.com'
+                password:
+                    type: string
+                    minLength: 6
+                    maxLength: 20
+                    pattern: '^(?=.*[a-z])(?=.*[A-Z]).{6,20}$'
+                    example: "Hkkdh99772*"              
+            UnauthorizedError:
+              type: object
+              properties:
+                errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        details:
+                          type: string
+                          example: 'Unauthorized'
+                        status:
+                          type: integer
+                          example: 401              
+            NotFoundError:
+              type: object
+              properties:
+                errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        details:
+                          type: string
+                          example: 'Not found'
+                        status:
+                          type: integer
+                          example: 404
+            Internalservererror:
+              type: object
+              properties:
+                errors:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      details:
+                        type: string
+                        example: 'Internal server error'
+                      status:
+                        type: integer
+                        example: 500
+      Name : ngAuthorization  
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt authorization.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ngAuthorization}/*/*/authorization
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref ngAuthorization
+
+  ApiGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref ngAuthorization
+      DeploymentId: !Ref ApiGatewayDeployment
+      StageName: dev
+
+Outputs:
+  ApiEndpoint:
+    Description: "The endpoint of the API Gateway"
+    Value: !Sub "https://${ngAuthorization}.execute-api.${AWS::Region}.amazonaws.com/dev/authorization"
