@@ -1,15 +1,48 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
-  LambdaFunction1:
+  TodoCreateTask:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: Todo-CreateTask-post 
+      FunctionName: Todo-CreateTask-POST
       Runtime: nodejs20.x
       Role: !GetAtt lambdaExecutionRole.Arn
-      Handler: todo-newtask/dist/controller/todo-createTask.handler
+      Handler: todo-task/dist/controller/createTask.handler
       Code:
-        S3Bucket: Todo-task
-        S3Key: .zip 
+        S3Bucket: todo-task
+        S3Key: todo-task.zip 
+
+  TodoTasksGET:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Todo-Tasks-GET 
+      Runtime: nodejs20.x
+      Role: !GetAtt lambdaExecutionRole.Arn
+      Handler: todo-task/dist/controller/getTasks.handler
+      Code:
+        S3Bucket: todo-task
+        S3Key: todo-task.zip
+
+   TodoUpdateTask :
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Todo-UpdateTask-UPDATE 
+      Runtime: nodejs20.x
+      Role: !GetAtt lambdaExecutionRole.Arn
+      Handler: todo-task/dist/controller/updateTask.handler
+      Code:
+        S3Bucket: todo-task
+        S3Key: todo-task.zip  
+  
+   TodoDeleteTask:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Todo-DeleteTask-DELETE
+      Runtime: nodejs20.x
+      Role: !GetAtt lambdaExecutionRole.Arn
+      Handler: todo-task/dist/controller/deleteTask.handler
+      Code:
+        S3Bucket: todo-task
+        S3Key: todo-task.zip 
   
   lambdaExecutionRole:
     Type : AWS::IAM::Role
@@ -33,146 +66,127 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-  ngAuthorization:
+  TodoApi:
     Type : AWS::ApiGateway::RestApi
     Properties :
+      Name: TodoTaskApi
       Body :
         openapi: 3.0.0
         info:
           version: '1.0'
-          title: Authorization
-          description: sends data for authorized user
+          title: Todo-task
+          description: adding and revewing the tasks in the list
         paths: 
-          /authorization:
+          /task:
             post:
-              summary: Send Token
-              description: Authenticate user using email and password, return JWT token
-              tags:
-                - Authorization Journey
+              description: A task is adding to list.
               requestBody:
                 required: true
                 content:
                   application/vnd.api+json:
                     schema:
-                      $ref: '#/components/schemas/NgAuthorization'
+                      $ref: '#/components/schemas/AddTask'
               responses:
-                "200":
-                  description: Authorized successfully
-                  content:
-                    application/vnd.api+json:
-                      schema:
-                        type: object
-                        properties:
-                          token:
-                            type: string
-                            example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
-                          typeofToken: 
-                            type: string
-                            example: bearer
-                          expiresIn: 
-                            type: number
-                            example: 6000 
-                          scope: 
-                            type: string
-                            example: read admin
-                            description: Authorization token          
-                "401":
-                  description: Unauthorized
-                  content:
-                    application/vnd.api+json:
-                      schema:
-                        $ref: '#/components/schemas/UnauthorizedError'        
-                "404":
-                  description: User not found
-                  content:
-                    application/vnd.api+json:
-                      schema:
-                        $ref: '#/components/schemas/NotFoundError'  
+                '201': {}
               x-amazon-apigateway-integration:
-                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${authorization.Arn}/invocations"
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoCreateTask.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
                   httpMethod: "POST"
-                  type: "aws_proxy"           
+                  type: "aws_proxy"
+
+            get:
+              description: A task is adding to list.
+              x-amazon-apigateway-integration:
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoTasksGET.Arn}/invocations"
+                  passthroughBehavior: "when_no_match"
+                  httpMethod: "GRT"
+                  type: "aws_proxy"
+
+          /update-task:
+            put:
+              description: update a task in the list.
+              requestBody:
+                required: true
+                content:
+                  application/vnd.api+json:
+                    schema:
+                      $ref: '#/components/schemas/UpdateTask'
+              responses:
+                '200': {}
+              x-amazon-apigateway-integration:
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoUpdateTask.Arn}/invocations"
+                  passthroughBehavior: "when_no_match"
+                  httpMethod: "PUT"
+                  type: "aws_proxy"
+
+          /delete-task:
+            delete:
+              description: delete a task from the list.
+              responses:
+                '200': {}
+              x-amazon-apigateway-integration:
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoDeleteTaskDELETE.Arn}/invocations"
+                  passthroughBehavior: "when_no_match"
+                  httpMethod: "DELETE"
+                  type: "aws_proxy"
+
         components:
           schemas:
-            NgAuthorization:
+            AddTask:
               type: object
-              description: user Object     
+              description: user task    
               properties:
-                emailId:
+                task-name:
                   type: string
-                  pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-                  example: 'user@example.com'
-                password:
+                status:
                     type: string
-                    minLength: 6
-                    maxLength: 20
-                    pattern: '^(?=.*[a-z])(?=.*[A-Z]).{6,20}$'
-                    example: "Hkkdh99772*"              
-            UnauthorizedError:
+            UpdateTask:
               type: object
+              description: Update user task    
               properties:
-                errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        details:
-                          type: string
-                          example: 'Unauthorized'
-                        status:
-                          type: integer
-                          example: 401              
-            NotFoundError:
-              type: object
-              properties:
-                errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        details:
-                          type: string
-                          example: 'Not found'
-                        status:
-                          type: integer
-                          example: 404
-            Internalservererror:
-              type: object
-              properties:
-                errors:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      details:
-                        type: string
-                        example: 'Internal server error'
-                      status:
-                        type: integer
-                        example: 500
-      Name : ngAuthorization  
+                id:
+                  type: string 
+                task-name:
+                  type: string
+                status:
+                  type: string                
+                                  
+      Name : todoTask  
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt authorization.Arn
+      FunctionName: !GetAtt TodoCreateTaskPOST.Arn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ngAuthorization}/*/*/authorization
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/
 
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     Properties:
-      RestApiId: !Ref ngAuthorization
+      RestApiId: !Ref TodoApi
 
   ApiGatewayStage:
     Type: AWS::ApiGateway::Stage
     Properties:
-      RestApiId: !Ref ngAuthorization
+      RestApiId: !Ref TodoApi
       DeploymentId: !Ref ApiGatewayDeployment
-      StageName: dev
+      StageName: todo
+
+  Task:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "EcommerceSignup"
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "Id"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "3"
+        WriteCapacityUnits: "3"    
 
 Outputs:
   ApiEndpoint:
     Description: "The endpoint of the API Gateway"
-    Value: !Sub "https://${ngAuthorization}.execute-api.${AWS::Region}.amazonaws.com/dev/authorization"
+    Value: !Sub "https://${TodoApi}.execute-api.${AWS::Region}.amazonaws.com/todo/TodoCreateTaskPOST"
