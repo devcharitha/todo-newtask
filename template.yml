@@ -152,13 +152,37 @@ Resources:
                   type: string                
                                   
       Name : todoTask  
-  LambdaInvokePermission:
+  LambdaInvokePermission1:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !GetAtt TodoCreateTask.Arn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/*
+
+  LambdaInvokePermission2:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt TodoTasksGET.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/*
+
+  LambdaInvokePermission3:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt TodoUpdateTask.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/*
+
+  LambdaInvokePermission4:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt TodoDeleteTask.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/*
 
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -185,8 +209,3 @@ Resources:
       ProvisionedThroughput: 
         ReadCapacityUnits: "3"
         WriteCapacityUnits: "3"    
-
-Outputs:
-  ApiEndpoint:
-    Description: "The endpoint of the API Gateway"
-    Value: !Sub "https://${TodoApi}.execute-api.${AWS::Region}.amazonaws.com/todo/TodoCreateTask"
