@@ -3,8 +3,6 @@ phases:
   build:
     commands:
       - npm install
-      - zip -r todo-task.zip  ./*
-      - aws s3 cp todo-task.zip s3://todo-task/todo-task.zip 
 artifacts:
   files:
-    - '**/*
+    - '**/*'
