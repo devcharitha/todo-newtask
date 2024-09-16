@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "types/*"
+      ]
+    },
+    /* Basic Options */
+    "target": "ES2022",
+    "module": "CommonJS",
+    "sourceRoot": "src",
+    "outDir": "dist",
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": false,
+    "listFiles": false,
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "test/**/*",
+    ".vscode",
+    ".idea",
+    ".git",
+    "node_modules/**/*",
+    "dist",
+    ".eslintrc.js"
+  ],
+  "compileOnSave": true,
+  "buildOnSave": false,
+  "atom": {
+    "rewriteTsconfig": false
+  }
+}
