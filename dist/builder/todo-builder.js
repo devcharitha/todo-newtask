@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildSuccessResponse = buildSuccessResponse;
-function buildSuccessResponse(statusCode, message) {
+exports.buildResponse = buildResponse;
+function buildResponse(statusCode, message, tasks) {
     return {
         statusCode: statusCode,
         body: {

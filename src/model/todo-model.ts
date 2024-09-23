@@ -1,5 +1,5 @@
 export interface TodoDetails {
-    id: string;
+    taskId: string;
     taskName: string;
     status: string;
 }

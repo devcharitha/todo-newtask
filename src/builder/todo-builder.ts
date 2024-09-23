@@ -1,4 +1,4 @@
-export function buildSuccessResponse(statusCode: number, message: string) {
+export function buildResponse(statusCode: number, message: string,tasks?:string) {
     return {
         statusCode: statusCode,
         body: {

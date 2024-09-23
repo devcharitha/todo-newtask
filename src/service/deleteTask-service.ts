@@ -1,13 +1,13 @@
 import { TodoRepository } from "../repository/todo-repository";
 
-export class GetTasksService{
+export class DeleteTaskService{
     private todoRepository:TodoRepository;
 
     constructor(todoRepository:TodoRepository){
         this.todoRepository=todoRepository;
     }
 
-    async getAllTasks(): Promise<any>{
-        return await this.todoRepository.getAllTasks();
+    async deleteTask(taskId:string): Promise<any>{
+        return await this.todoRepository.deleteTask(taskId);
     }
 }
