@@ -8,7 +8,7 @@ Resources:
       Role: !GetAtt lambdaExecutionRole.Arn
       Handler: todo-task/dist/controller/createTask.handler
       Code:
-        S3Bucket: todo-task
+        S3Bucket: todo-tasks
         S3Key: todo-task.zip 
 
   TodoTasksGET:
@@ -19,7 +19,7 @@ Resources:
       Role: !GetAtt lambdaExecutionRole.Arn
       Handler: todo-task/dist/controller/getTasks.handler
       Code:
-        S3Bucket: todo-task
+        S3Bucket: todo-tasks
         S3Key: todo-task.zip
 
   TodoUpdateTask :
@@ -30,7 +30,7 @@ Resources:
       Role: !GetAtt lambdaExecutionRole.Arn
       Handler: todo-task/dist/controller/updateTask.handler
       Code:
-        S3Bucket: todo-task
+        S3Bucket: todo-tasks
         S3Key: todo-task.zip  
   
   TodoDeleteTask:
@@ -41,7 +41,7 @@ Resources:
       Role: !GetAtt lambdaExecutionRole.Arn
       Handler: todo-task/dist/controller/deleteTask.handler
       Code:
-        S3Bucket: todo-task
+        S3Bucket: todo-tasks
         S3Key: todo-task.zip 
   
   lambdaExecutionRole:
