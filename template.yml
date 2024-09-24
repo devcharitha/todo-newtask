@@ -77,7 +77,7 @@ Resources:
           title: Todo-task
           description: adding and revewing the tasks in the list
         paths: 
-          /task:
+          /createTask:
             post:
               description: A task is adding to list.
               requestBody:
@@ -87,15 +87,37 @@ Resources:
                     schema:
                       $ref: '#/components/schemas/AddTask'
               responses:
-                '201': {}
+                "201":
+                  description: task added successfully
+                  content:
+                    schema:
+                      $ref: '#/components/schemas/AddTask' 
+                "400":
+                  description: cannot add the task
+                  content:
+                    schema:
+                      $ref: '#/components/schemas/BadRequest'
+
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoCreateTask.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
                   httpMethod: "POST"
                   type: "aws_proxy"
-
+          /tasks:
             get:
               description: A task is adding to list.
+              responses:
+                "200":
+                  description: retrieved all tasks successfully
+                  content:
+                    schema:
+                      $ref: '#/components/schemas/GetTask' 
+                "400":
+                  description: cannot get the tasks
+                  content:
+                    schema:
+                      $ref: '#/components/schemas/BadRequest'
+
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoTasksGET.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
@@ -112,7 +134,17 @@ Resources:
                     schema:
                       $ref: '#/components/schemas/UpdateTask'
               responses:
-                '200': {}
+                "200":
+                  description: updated task successfully
+                  content:
+                    schema:
+                      $ref: '#/components/schemas/UpdateTask'
+                "400":
+                  description: cannot updated the tasks
+                  content:
+                    schema:
+                      $ref: '#/components/schemas/BadRequest'
+                 
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoUpdateTask.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
@@ -123,7 +155,16 @@ Resources:
             delete:
               description: delete a task from the list.
               responses:
-                '200': {}
+                "200":
+                  description: deleted task successfully
+                  content:
+                    schema:
+                      $ref: '#/components/schemas/UpdateTask'
+                "400":
+                  description: cannot delete task
+                  content:
+                    schema:
+                      $ref: '#/components/schemas/BadRequest'
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoDeleteTask.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
@@ -136,20 +177,46 @@ Resources:
               type: object
               description: user task    
               properties:
-                task-name:
+                taskName:
                   type: string
                 status:
-                    type: string
+                  type: string
+            GetTask:
+              type: object
+              description: get all tasks
+              properties:
+                taskId:
+                  type: string
+                taskName:
+                  type: string
+                status:
+                  type: string
             UpdateTask:
               type: object
               description: Update user task    
               properties:
-                id:
+                taskId:
                   type: string 
-                task-name:
+                taskName:
                   type: string
                 status:
-                  type: string                
+                  type: string  
+            BadRequest:
+              type: object
+              properties:
+                errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        details:
+                          type: string
+                          example: 'BadRequest'
+                        status:
+                          type: integer
+                          example: 400  
+                
+                                
                                   
       Name : todoTask  
   LambdaInvokePermission1:
