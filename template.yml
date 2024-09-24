@@ -90,13 +90,15 @@ Resources:
                 "201":
                   description: task added successfully
                   content:
-                    schema:
-                      $ref: '#/components/schemas/AddTask' 
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/AddTask' 
                 "400":
                   description: cannot add the task
                   content:
-                    schema:
-                      $ref: '#/components/schemas/BadRequest'
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/BadRequest'
 
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoCreateTask.Arn}/invocations"
@@ -110,18 +112,20 @@ Resources:
                 "200":
                   description: retrieved all tasks successfully
                   content:
-                    schema:
-                      $ref: '#/components/schemas/GetTask' 
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/GetTask' 
                 "400":
                   description: cannot get the tasks
                   content:
-                    schema:
-                      $ref: '#/components/schemas/BadRequest'
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/BadRequest'
 
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoTasksGET.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
-                  httpMethod: "GRT"
+                  httpMethod: "GET"
                   type: "aws_proxy"
 
           /update-task:
@@ -137,13 +141,15 @@ Resources:
                 "200":
                   description: updated task successfully
                   content:
-                    schema:
-                      $ref: '#/components/schemas/UpdateTask'
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/UpdateTask'
                 "400":
                   description: cannot updated the tasks
                   content:
-                    schema:
-                      $ref: '#/components/schemas/BadRequest'
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/BadRequest'
                  
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoUpdateTask.Arn}/invocations"
@@ -158,13 +164,15 @@ Resources:
                 "200":
                   description: deleted task successfully
                   content:
-                    schema:
-                      $ref: '#/components/schemas/UpdateTask'
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/UpdateTask'
                 "400":
                   description: cannot delete task
                   content:
-                    schema:
-                      $ref: '#/components/schemas/BadRequest'
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/BadRequest'
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoDeleteTask.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
@@ -215,9 +223,7 @@ Resources:
                         status:
                           type: integer
                           example: 400  
-                
-                                
-                                  
+                                       
       Name : todoTask  
   LambdaInvokePermission1:
     Type: AWS::Lambda::Permission
