@@ -274,10 +274,10 @@ Resources:
     Properties:
       TableName: "Todo"
       AttributeDefinitions:
-        - AttributeName: "Id"
+        - AttributeName: "taskId"
           AttributeType: "S"
       KeySchema: 
-        - AttributeName: "Id"
+        - AttributeName: "taskId"
           KeyType: "HASH"
       ProvisionedThroughput: 
         ReadCapacityUnits: "3"
