@@ -6,8 +6,8 @@ class DeleteTaskService {
     constructor(todoRepository) {
         this.todoRepository = todoRepository;
     }
-    async deleteTask(taskId) {
-        return await this.todoRepository.deleteTask(taskId);
+    async deleteTask(userId, taskId) {
+        return await this.todoRepository.deleteTask(userId, taskId);
     }
 }
 exports.DeleteTaskService = DeleteTaskService;

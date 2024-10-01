@@ -10,31 +10,44 @@ class TodoRepository {
         this.client = new client_dynamodb_1.DynamoDBClient({ region: "us-west-2" });
         this.docClient = lib_dynamodb_1.DynamoDBDocumentClient.from(this.client);
     }
-    async createTask(requestBody) {
+    async createUser(requestBody) {
         const command = new lib_dynamodb_1.PutCommand({
-            TableName: "EcommerceSignup",
+            TableName: "Todo",
             Item: {
-                taskName: requestBody.taskName,
-                status: requestBody.status
+                userName: requestBody.userName,
+                userId: requestBody.userId,
+                tasks: requestBody.tasks
             }
         });
         const response = await this.client.send(command);
         console.log(response);
         return response;
     }
-    async getAllTasks() {
+    async loginUserByUserId(userId) {
+        const command = new lib_dynamodb_1.GetCommand({
+            TableName: "Todo",
+            Key: {
+                userId: userId,
+            },
+        });
+        const response = await this.docClient.send(command);
+        console.log(response);
+        return response;
+    }
+    async getUsers() {
         const command = new lib_dynamodb_1.ScanCommand({
-            TableName: "EcommerceSignup",
+            TableName: "Todo",
         });
         const response = await this.docClient.send(command);
         console.log(response);
         return response.Items;
     }
-    async updateTask(taskId, taskName, status) {
+    async updateTask(userId, taskId, taskName, status) {
         const command = new lib_dynamodb_1.UpdateCommand({
-            TableName: "EcommerceSignup",
+            TableName: "Todo",
             Key: {
-                taskId: taskId
+                userId: userId,
+                "tasks.taskId": taskId
             },
             UpdateExpression: "set taskName = :taskName, #status = :status",
             ExpressionAttributeValues: {
@@ -49,11 +62,15 @@ class TodoRepository {
         console.log(response);
         return response;
     }
-    async deleteTask(taskId) {
-        const command = new lib_dynamodb_1.DeleteCommand({
-            TableName: "EcommerceSignup",
+    async deleteTask(userId, taskId) {
+        const command = new lib_dynamodb_1.UpdateCommand({
+            TableName: "Todo",
             Key: {
-                taskId: taskId
+                userId: userId
+            },
+            UpdateExpression: "REMOVE tasks[$.taskId = :taskId]",
+            ExpressionAttributeValues: {
+                ":taskId": taskId
             }
         });
         const response = await this.docClient.send(command);

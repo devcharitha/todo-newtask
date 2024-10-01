@@ -1,14 +1,15 @@
 import { TodoRepository } from "../repository/todo-repository";
 import { TodoDetails } from "../model/todo-model";
 
-export class CreateTaskService{
+export class LoginUserService {
     private todoRepository:TodoRepository;
 
     constructor(todoRepository:TodoRepository){
         this.todoRepository=todoRepository;
     }
 
-    async createTask(todoDetails:TodoDetails): Promise<any>{
-        return await this.todoRepository.createTask(todoDetails);
-    }
+
+  async loginUserByUserId(userId: string): Promise<TodoDetails> {
+    return await this.todoRepository.loginUserByUserId(userId);
+  }
 }

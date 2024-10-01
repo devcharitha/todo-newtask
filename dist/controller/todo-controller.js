@@ -1,70 +1,121 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTaskHandler = exports.updateTaskHandler = exports.getTasksHandler = exports.createTaskHandler = void 0;
+exports.deleteTaskHandler = exports.updateTaskHandler = exports.getUsersHandler = exports.loginUserHandler = exports.createUserHandler = void 0;
 const todo_builder_1 = require("../builder/todo-builder");
 const uuid_1 = require("uuid");
 const todo_repository_1 = require("../repository/todo-repository");
-const createTask_service_1 = require("../service/createTask-service");
-const getTasks_service_1 = require("../service/getTasks-service");
+const createUser_service_1 = require("../service/createUser-service");
+const getUsers_service_1 = require("../service/getUsers-service");
 const updateTask_service_1 = require("../service/updateTask-service");
 const deleteTask_service_1 = require("../service/deleteTask-service");
-const createTaskService = new createTask_service_1.CreateTaskService(new todo_repository_1.TodoRepository());
-const getTasksService = new getTasks_service_1.GetTasksService(new todo_repository_1.TodoRepository());
+const validation_service_1 = require("../service/validation-service");
+const loginUser_service_1 = require("../service/loginUser-service");
+const token_service_1 = require("../service/token-service");
+const createUserService = new createUser_service_1.CreateUserService(new todo_repository_1.TodoRepository());
+const getUsersService = new getUsers_service_1.GetUsersService(new todo_repository_1.TodoRepository());
 const updateTaskService = new updateTask_service_1.UpdateTaskService(new todo_repository_1.TodoRepository());
 const deleteTaskService = new deleteTask_service_1.DeleteTaskService(new todo_repository_1.TodoRepository());
-const createTaskHandler = async (event) => {
+const loginUserService = new loginUser_service_1.LoginUserService(new todo_repository_1.TodoRepository());
+const validationService = new validation_service_1.ValidationService(loginUserService);
+const createUserHandler = async (event) => {
+    const requestBody = JSON.parse(event.body);
     try {
-        const requestBody = JSON.parse(event.body);
+        validationService.validateUserName(requestBody.userName);
+        validationService.validateUserId(requestBody.userId);
+        validationService.validatePassword(requestBody.password);
+        validationService.validateTaskName(requestBody.taskName);
+        validationService.validateStatus(requestBody.status);
+        const userName = requestBody.userName;
+        const userId = requestBody.userId;
         const taskId = (0, uuid_1.v4)();
         const taskName = requestBody.taskName;
         const status = requestBody.status;
-        const todoDetails = {
+        const task = {
             taskId: taskId,
             taskName: taskName,
             status: status
         };
-        await createTaskService.createTask(todoDetails);
+        const todoDetails = {
+            userId: userId,
+            userName: userName,
+            tasks: [task]
+        };
+        await createUserService.createUser(todoDetails);
         let response = (0, todo_builder_1.buildResponse)(201, 'Task added sucessfully');
         console.log(response);
         return response;
     }
     catch (error) {
         console.log(error);
-        let errorResponse = (0, todo_builder_1.buildResponse)(500, 'Internal server error');
+        let errorResponse = (0, todo_builder_1.buildResponse)(400, 'Not able to add task');
         console.log(errorResponse);
         return errorResponse;
     }
 };
-exports.createTaskHandler = createTaskHandler;
-const getTasksHandler = async (event) => {
+exports.createUserHandler = createUserHandler;
+const loginUserHandler = async (event) => {
+    const requestBody = JSON.parse(event.body);
     try {
-        const tasks = await getTasksService.getAllTasks();
-        let response = (0, todo_builder_1.buildResponse)(200, 'returned todo-list successfully', tasks);
+        validationService.validateUserId(requestBody.userId);
+        validationService.validatePassword(requestBody.password);
+        const credentials = await validationService.validateUser(requestBody.userId, requestBody.password);
+        const tokenResponse = (0, token_service_1.createJWT)(credentials);
+        let response = (0, todo_builder_1.buildAuthenticateResponse)(200, 'Generated code successfully', tokenResponse);
         console.log(response);
         return response;
     }
     catch (error) {
         console.log(error);
-        let errorResponse = (0, todo_builder_1.buildResponse)(500, 'Internal server error');
+        if (error.message === "Invalid UserId format" || error.message === "Invalid Password format") {
+            let errorMessage = (0, todo_builder_1.buildResponse)(400, error.message);
+            console.log(errorMessage);
+            return errorMessage;
+        }
+        else if (error.message === "Unauthorized") {
+            let err = (0, todo_builder_1.buildResponse)(401, error.message);
+            console.log(err);
+            return err;
+        }
+        else {
+            let error = (0, todo_builder_1.buildResponse)(500, 'Internal server error');
+            console.log(error);
+            return error;
+        }
+    }
+};
+exports.loginUserHandler = loginUserHandler;
+const getUsersHandler = async (event) => {
+    try {
+        const tasks = await getUsersService.getUsers();
+        let response = (0, todo_builder_1.buildResponse)(200, 'Retrived all users', tasks);
+        console.log(response);
+        return response;
+    }
+    catch (error) {
+        console.log(error);
+        let errorResponse = (0, todo_builder_1.buildResponse)(400, 'Cannot retrive users');
         console.log(errorResponse);
         return errorResponse;
     }
 };
-exports.getTasksHandler = getTasksHandler;
+exports.getUsersHandler = getUsersHandler;
 const updateTaskHandler = async (event) => {
     try {
+        const token = event.headers.Authorization.split(' ')[1];
+        const decodedToken = (0, token_service_1.verifyJWT)(token);
+        const userId = decodedToken.userId;
         const requestBody = JSON.parse(event.body);
         const taskId = requestBody.taskId;
         const taskName = requestBody.taskName;
         const status = requestBody.status;
-        await updateTaskService.updateTask(taskId, taskName, status);
+        await updateTaskService.updateTask(userId, taskId, taskName, status);
         let response = (0, todo_builder_1.buildResponse)(200, 'Task updated successfully');
         console.log(response);
         return response;
     }
     catch (error) {
         console.log(error);
-        let errorResponse = (0, todo_builder_1.buildResponse)(500, 'Internal server error');
+        let errorResponse = (0, todo_builder_1.buildResponse)(400, 'Bad request cannot update the task');
         console.log(errorResponse);
         return errorResponse;
     }
@@ -73,15 +124,16 @@ exports.updateTaskHandler = updateTaskHandler;
 const deleteTaskHandler = async (event) => {
     try {
         const requestBody = JSON.parse(event.body);
+        const userId = requestBody.userId;
         const taskId = requestBody.taskId;
-        await deleteTaskService.deleteTask(taskId);
+        await deleteTaskService.deleteTask(userId, taskId);
         let response = (0, todo_builder_1.buildResponse)(200, 'Task deleted successfully');
         console.log(response);
         return response;
     }
     catch (error) {
         console.log(error);
-        let errorResponse = (0, todo_builder_1.buildResponse)(400, 'Bad request');
+        let errorResponse = (0, todo_builder_1.buildResponse)(400, 'Bad request cannot delete task');
         console.log(errorResponse);
         return errorResponse;
     }

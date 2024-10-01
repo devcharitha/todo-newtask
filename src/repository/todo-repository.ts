@@ -1,6 +1,6 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, ScanCommand, DynamoDBDocumentClient, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
-import { TodoDetails } from "../model/todo-model";
+import { PutCommand, ScanCommand, DynamoDBDocumentClient, UpdateCommand, DeleteCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { TodoDetails} from "../model/todo-model";
 
 export class TodoRepository {
     private client: DynamoDBClient;
@@ -11,33 +11,45 @@ export class TodoRepository {
         this.docClient = DynamoDBDocumentClient.from(this.client);
     }
 
-    async createTask(requestBody: TodoDetails): Promise<any> {
+    async createUser(requestBody: TodoDetails): Promise<any> {
         const command = new PutCommand({
-            TableName: "EcommerceSignup",
+            TableName: "Todo",
             Item: {
-                taskName: requestBody.taskName,
-                status: requestBody.status
+                userName: requestBody.userName,
+                userId: requestBody.userId,
+                tasks:requestBody.tasks
             }
         });
         const response = await this.client.send(command);
         console.log(response);
         return response;
     }
-
-    async getAllTasks(): Promise<TodoDetails[]> {
+    async loginUserByUserId(userId: string): Promise<TodoDetails> {
+        const command = new GetCommand({
+            TableName: "Todo",
+            Key: {
+                userId: userId,
+            },
+        });
+        const response: any = await this.docClient.send(command);
+        console.log(response);
+        return response;
+    }
+    async getUsers(): Promise<TodoDetails[]> {
         const command = new ScanCommand({
-            TableName: "EcommerceSignup",
+            TableName: "Todo",
         });
         const response: any = await this.docClient.send(command);
         console.log(response);
         return response.Items as TodoDetails[];
     }
 
-    async updateTask(taskId: string, taskName: string, status: string): Promise<any> {
+    async updateTask(userId:string,taskId: string, taskName: string, status: string): Promise<any> {
         const command = new UpdateCommand({
-            TableName: "EcommerceSignup",
+            TableName: "Todo",
             Key: {
-                taskId: taskId
+                userId:userId,
+                "tasks.taskId": taskId
             },
             UpdateExpression: "set taskName = :taskName, #status = :status",
             ExpressionAttributeValues: {
@@ -53,11 +65,15 @@ export class TodoRepository {
         return response;
     }
 
-    async deleteTask(taskId: string): Promise<any> {
-        const command = new DeleteCommand({
-            TableName: "EcommerceSignup",
+    async deleteTask(userId: string, taskId: string): Promise<any> {
+        const command = new UpdateCommand({
+            TableName: "Todo",
             Key: {
-                taskId: taskId
+                userId: userId
+            },
+            UpdateExpression: "REMOVE tasks[$.taskId = :taskId]",
+            ExpressionAttributeValues: {
+                ":taskId": taskId
             }
         });
         const response = await this.docClient.send(command);
