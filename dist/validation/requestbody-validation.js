@@ -10,7 +10,7 @@ function validateUserName(userName) {
     return userNameRegex.test(userName);
 }
 function validateUserId(userId) {
-    const userIdRegex = /^[a-f0-9]{6,10}$/;
+    const userIdRegex = /^[a-z0-9]{6,10}$/;
     return userIdRegex.test(userId);
 }
 function validatePassword(password) {
@@ -22,6 +22,6 @@ function validateTaskName(taskName) {
     return taskNameRegex.test(taskName);
 }
 function validateStatus(status) {
-    return status === "completed" || status === "Incomplete";
+    return status === "Completed" || status === "Incomplete";
 }
 //# sourceMappingURL=requestBody-validation.js.map

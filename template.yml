@@ -406,5 +406,5 @@ Resources:
         - AttributeName: "userId"
           KeyType: "HASH"
       ProvisionedThroughput: 
-        ReadCapacityUnits: "3"
-        WriteCapacityUnits: "3"    
+        ReadCapacityUnits: "4"
+        WriteCapacityUnits: "4"    

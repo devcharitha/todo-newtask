@@ -16,6 +16,7 @@ class TodoRepository {
             Item: {
                 userName: requestBody.userName,
                 userId: requestBody.userId,
+                password: requestBody.password,
                 tasks: requestBody.tasks
             }
         });

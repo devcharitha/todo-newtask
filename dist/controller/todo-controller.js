@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteTaskHandler = exports.updateTaskHandler = exports.getUsersHandler = exports.loginUserHandler = exports.createUserHandler = void 0;
 const todo_builder_1 = require("../builder/todo-builder");
@@ -11,12 +14,16 @@ const deleteTask_service_1 = require("../service/deleteTask-service");
 const validation_service_1 = require("../service/validation-service");
 const loginUser_service_1 = require("../service/loginUser-service");
 const token_service_1 = require("../service/token-service");
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const createUserService = new createUser_service_1.CreateUserService(new todo_repository_1.TodoRepository());
 const getUsersService = new getUsers_service_1.GetUsersService(new todo_repository_1.TodoRepository());
 const updateTaskService = new updateTask_service_1.UpdateTaskService(new todo_repository_1.TodoRepository());
 const deleteTaskService = new deleteTask_service_1.DeleteTaskService(new todo_repository_1.TodoRepository());
 const loginUserService = new loginUser_service_1.LoginUserService(new todo_repository_1.TodoRepository());
 const validationService = new validation_service_1.ValidationService(loginUserService);
+// const event = {
+//     body: "{\"userName\":\"Charitha\",\"userId\":\"a9f7h3i\",\"password\":\"Codehere@12\",\"taskName\":\"Attending Interview\",\"status\":\"Incomplete\"}"
+// };
 const createUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     try {
@@ -27,9 +34,13 @@ const createUserHandler = async (event) => {
         validationService.validateStatus(requestBody.status);
         const userName = requestBody.userName;
         const userId = requestBody.userId;
+        const plainPassword = requestBody.password;
         const taskId = (0, uuid_1.v4)();
         const taskName = requestBody.taskName;
         const status = requestBody.status;
+        const saltRounds = 10;
+        const hashedPassword = await bcryptjs_1.default.hash(plainPassword, saltRounds);
+        console.log(hashedPassword);
         const task = {
             taskId: taskId,
             taskName: taskName,
@@ -38,10 +49,11 @@ const createUserHandler = async (event) => {
         const todoDetails = {
             userId: userId,
             userName: userName,
+            password: hashedPassword,
             tasks: [task]
         };
         await createUserService.createUser(todoDetails);
-        let response = (0, todo_builder_1.buildResponse)(201, 'Task added sucessfully');
+        let response = (0, todo_builder_1.buildResponse)(201, 'Task added successfully');
         console.log(response);
         return response;
     }
@@ -53,6 +65,7 @@ const createUserHandler = async (event) => {
     }
 };
 exports.createUserHandler = createUserHandler;
+// createUserHandler(event);
 const loginUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     try {

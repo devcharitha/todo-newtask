@@ -9,15 +9,20 @@ import { DeleteTaskService } from "../service/deleteTask-service";
 import { ValidationService } from "../service/validation-service";
 import { LoginUserService } from "../service/loginUser-service";
 import { createJWT, verifyJWT } from "../service/token-service";
+import bcrypt from 'bcryptjs';
 
 const createUserService = new CreateUserService(new TodoRepository());
 const getUsersService = new GetUsersService(new TodoRepository());
-const updateTaskService= new UpdateTaskService( new TodoRepository());
-const deleteTaskService=new DeleteTaskService(new TodoRepository());
+const updateTaskService = new UpdateTaskService(new TodoRepository());
+const deleteTaskService = new DeleteTaskService(new TodoRepository());
 const loginUserService = new LoginUserService(new TodoRepository());
 const validationService = new ValidationService(loginUserService);
 
-export const createUserHandler = async (event)=>{
+// const event = {
+//     body: "{\"userName\":\"Charitha\",\"userId\":\"a9f7h3i\",\"password\":\"Codehere@12\",\"taskName\":\"Attending Interview\",\"status\":\"Incomplete\"}"
+// };
+
+export const createUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     try {
         validationService.validateUserName(requestBody.userName);
@@ -26,12 +31,16 @@ export const createUserHandler = async (event)=>{
         validationService.validateTaskName(requestBody.taskName);
         validationService.validateStatus(requestBody.status);
 
-
-        const userName=requestBody.userName;
-        const userId=requestBody.userId
+        const userName = requestBody.userName;
+        const userId = requestBody.userId;
+        const plainPassword = requestBody.password;
         const taskId = uuidv4();
         const taskName = requestBody.taskName;
         const status = requestBody.status;
+
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+        console.log(hashedPassword);
 
         const task: Taskdetails = {
             taskId: taskId,
@@ -42,11 +51,12 @@ export const createUserHandler = async (event)=>{
         const todoDetails: TodoDetails = {
             userId: userId,
             userName: userName,
-            tasks: [task] 
+            password: hashedPassword,
+            tasks: [task]
         };
 
         await createUserService.createUser(todoDetails);
-        let response = buildResponse(201,'Task added sucessfully');
+        let response = buildResponse(201, 'Task added successfully');
         console.log(response);
         return response;
 
@@ -57,6 +67,9 @@ export const createUserHandler = async (event)=>{
         return errorResponse;
     }
 };
+
+// createUserHandler(event);
+
 
 export const loginUserHandler = async (event)=>{
     const requestBody = JSON.parse(event.body);

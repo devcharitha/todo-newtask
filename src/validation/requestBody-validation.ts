@@ -3,7 +3,7 @@ export function validateUserName(userName:string): boolean {
     return userNameRegex.test(userName)
 }
 export function validateUserId(userId: string): boolean {
-    const userIdRegex = /^[a-f0-9]{6,10}$/;
+    const userIdRegex = /^[a-z0-9]{6,10}$/;
     return userIdRegex.test(userId);
 }
 export function validatePassword(password: string): boolean {
@@ -16,5 +16,5 @@ export function validateTaskName(taskName: string): boolean {
 }
 
 export function validateStatus(status: string): boolean {
-    return status === "completed" || status === "Incomplete";
+    return status === "Completed" || status === "Incomplete";
 }
