@@ -1,4 +1,5 @@
 import { TodoDetails } from '../model/todo-model';
+import bcrypt from 'bcryptjs';
 import { LoginUserService } from '../service/loginUser-service';
 import {validateUserName,validateUserId,validatePassword,validateTaskName,validateStatus} from '../validation/requestBody-validation';
 
@@ -36,9 +37,10 @@ export class ValidationService {
     async validateUser(userId: string, password:string ): Promise<TodoDetails> {
         try {
             const credentials: any = await this.loginUserService.loginUserByUserId(userId);
-            if (!credentials || credentials.Item.userId!== userId || credentials.Item.password !== password) {
-                throw new Error('Unauthorized')
-            }
+            const isPasswordValid = await bcrypt.compare(password, credentials.Item.password);
+        if (!credentials || credentials.Item.userId !== userId || !isPasswordValid) {
+            throw new Error('Unauthorized');
+        }
             return credentials;
         } catch (error) {
             throw error;

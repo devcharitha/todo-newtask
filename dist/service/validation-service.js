@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValidationService = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const requestBody_validation_1 = require("../validation/requestBody-validation");
 class ValidationService {
     loginUserService;
@@ -35,7 +39,8 @@ class ValidationService {
     async validateUser(userId, password) {
         try {
             const credentials = await this.loginUserService.loginUserByUserId(userId);
-            if (!credentials || credentials.Item.userId !== userId || credentials.Item.password !== password) {
+            const isPasswordValid = await bcryptjs_1.default.compare(password, credentials.Item.password);
+            if (!credentials || credentials.Item.userId !== userId || !isPasswordValid) {
                 throw new Error('Unauthorized');
             }
             return credentials;

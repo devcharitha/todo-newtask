@@ -21,9 +21,6 @@ const updateTaskService = new updateTask_service_1.UpdateTaskService(new todo_re
 const deleteTaskService = new deleteTask_service_1.DeleteTaskService(new todo_repository_1.TodoRepository());
 const loginUserService = new loginUser_service_1.LoginUserService(new todo_repository_1.TodoRepository());
 const validationService = new validation_service_1.ValidationService(loginUserService);
-// const event = {
-//     body: "{\"userName\":\"Charitha\",\"userId\":\"a9f7h3i\",\"password\":\"Codehere@12\",\"taskName\":\"Attending Interview\",\"status\":\"Incomplete\"}"
-// };
 const createUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     try {
@@ -40,7 +37,6 @@ const createUserHandler = async (event) => {
         const status = requestBody.status;
         const saltRounds = 10;
         const hashedPassword = await bcryptjs_1.default.hash(plainPassword, saltRounds);
-        console.log(hashedPassword);
         const task = {
             taskId: taskId,
             taskName: taskName,
@@ -65,7 +61,6 @@ const createUserHandler = async (event) => {
     }
 };
 exports.createUserHandler = createUserHandler;
-// createUserHandler(event);
 const loginUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     try {
