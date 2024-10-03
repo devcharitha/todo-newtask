@@ -1,7 +1,7 @@
 import { TodoDetails } from '../model/todo-model';
 import bcrypt from 'bcryptjs';
 import { LoginUserService } from '../service/loginUser-service';
-import {validateUserName,validateUserId,validatePassword,validateTaskName,validateStatus} from '../validation/requestBody-validation';
+import {validateUserName,validateUserId,validatePassword,validateTaskName,validateStatus} from '../validation/request-validation';
 
 export class ValidationService {
     private loginUserService: LoginUserService;
