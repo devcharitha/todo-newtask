@@ -18,6 +18,9 @@ const deleteTaskService = new DeleteTaskService(new TodoRepository());
 const loginUserService = new LoginUserService(new TodoRepository());
 const validationService = new ValidationService(loginUserService);
 
+// const event = {
+//     body: "{,\"userId\":\"e6d7s3\",\"password\":\"Msbrainy\"}"
+// }
 
 export const createUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
@@ -64,7 +67,7 @@ export const createUserHandler = async (event) => {
     }
 };
 
-
+// createUserHandler(event)
 
 export const loginUserHandler = async (event)=>{
     const requestBody = JSON.parse(event.body);
@@ -108,6 +111,7 @@ export const getUsersHandler = async (event)=>{
     }
 
 };
+// getUsersHandler({})
 export const updateTaskHandler = async (event) => {
     try {
         const token = event.headers.Authorization.split(' ')[1];

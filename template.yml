@@ -6,7 +6,7 @@ Resources:
       FunctionName: Todo-CreateUser-POST
       Runtime: nodejs20.x
       Role: !GetAtt lambdaExecutionRole.Arn
-      Handler: todo-task/dist/controller/createUser.handler
+      Handler: todo-task/dist/controller/todo-controller.createUserHandler
       Code:
         S3Bucket: todo-tasks
         S3Key: todo-task.zip
@@ -17,7 +17,7 @@ Resources:
       FunctionName: Todo-LoginUser-POST
       Runtime: nodejs20.x
       Role: !GetAtt lambdaExecutionRole.Arn
-      Handler: todo-task/dist/controller/loginUser.handler
+      Handler: todo-task/dist/controller/todo-controller.loginUserHandler
       Code:
         S3Bucket: todo-tasks
         S3Key: todo-task.zip
@@ -28,7 +28,7 @@ Resources:
       FunctionName: Todo-Users-GET 
       Runtime: nodejs20.x
       Role: !GetAtt lambdaExecutionRole.Arn
-      Handler: todo-task/dist/controller/getUsers.handler
+      Handler: todo-task/dist/controller/todo-controller.getUsersHandler
       Code:
         S3Bucket: todo-tasks
         S3Key: todo-task.zip
@@ -39,7 +39,7 @@ Resources:
       FunctionName: Todo-UpdateTask-UPDATE 
       Runtime: nodejs20.x
       Role: !GetAtt lambdaExecutionRole.Arn
-      Handler: todo-task/dist/controller/updateTask.handler
+      Handler: todo-task/dist/controller/todo-controller.updateTaskHandler
       Code:
         S3Bucket: todo-tasks
         S3Key: todo-task.zip  
@@ -50,7 +50,7 @@ Resources:
       FunctionName: Todo-DeleteTask-DELETE
       Runtime: nodejs20.x
       Role: !GetAtt lambdaExecutionRole.Arn
-      Handler: todo-task/dist/controller/deleteTask.handler
+      Handler: todo-task/dist/controller/todo-controller.deleteTaskHandler
       Code:
         S3Bucket: todo-tasks
         S3Key: todo-task.zip 
