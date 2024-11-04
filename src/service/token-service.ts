@@ -1,13 +1,14 @@
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
-export function createJWT(credentials: any): any {
+export function createJWT(userId: string): any {
   const payload = {
-    userId: credentials.userId,
+    userId
   };
+  console.log(payload)
   const secretKey = 'todoTasks';
   const options = {
-    expiresIn: '200s'
+    expiresIn: '1hr'
   };
   try {
     const token = jwt.sign(payload, secretKey, options);
@@ -24,13 +25,13 @@ function buildTokenResponse(token: string, jti: string) {
   return {
     token,
     token_type: "bearer",
-    expires_in: '200s',
+    expires_in: '1hr',
     scope: "read admin",
     jti
   };
 }
 
-export function verifyJWT(token: string): any {
+export async function verifyJWT(token: string): Promise<any> {
   const secretKey = 'todoTasks';
   try {
     const decoded = jwt.verify(token, secretKey);

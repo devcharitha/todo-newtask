@@ -164,7 +164,7 @@ Resources:
                   passthroughBehavior: "when_no_match"
                   httpMethod: "POST"
                   type: "aws_proxy"
-          /getUsers:
+          /getUsers/{userId}:
             get:
               description: Get all the users.
               responses:
@@ -187,7 +187,7 @@ Resources:
                   httpMethod: "GET"
                   type: "aws_proxy"
 
-          /update-task:
+          /update-task/{userId}:
             put:
               description: updating user task in the list.
               requestBody:
@@ -216,7 +216,7 @@ Resources:
                   httpMethod: "PUT"
                   type: "aws_proxy"
 
-          /delete-task:
+          /delete-task/{userId}:
             delete:
               description: deleting a task from the user tasks list.
               responses:

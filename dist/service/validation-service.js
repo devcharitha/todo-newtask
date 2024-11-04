@@ -36,14 +36,14 @@ class ValidationService {
             throw new Error("Invalid Password format");
         }
     }
-    async validateUser(userId, password) {
+    async validateUser({ userId, password }) {
         try {
-            const credentials = await this.loginUserService.loginUserByUserId(userId);
-            const isPasswordValid = await bcryptjs_1.default.compare(password, credentials.Item.password);
-            if (!credentials || credentials.Item.userId !== userId || !isPasswordValid) {
+            const user = await this.loginUserService.loginUserByUserId(userId);
+            const isPasswordValid = await bcryptjs_1.default.compare(password, user.password);
+            if (!user || user.userId !== userId || !isPasswordValid) {
                 throw new Error('Unauthorized');
             }
-            return credentials;
+            return user.userId;
         }
         catch (error) {
             throw error;

@@ -1,6 +1,6 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, ScanCommand, DynamoDBDocumentClient, UpdateCommand, DeleteCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
-import { TodoDetails} from "../model/todo-model";
+import { PutCommand, DynamoDBDocumentClient, UpdateCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { Taskdetails, TodoDetails } from "../model/todo-model";
 
 export class TodoRepository {
     private client: DynamoDBClient;
@@ -18,7 +18,7 @@ export class TodoRepository {
                 userName: requestBody.userName,
                 userId: requestBody.userId,
                 password: requestBody.password,
-                tasks:requestBody.tasks
+                tasks: requestBody.tasks
             }
         });
         const response = await this.client.send(command);
@@ -36,49 +36,84 @@ export class TodoRepository {
         console.log(response);
         return response;
     }
-    async getUsers(): Promise<TodoDetails[]> {
-        const command = new ScanCommand({
+    async getUserTasks(userId: string): Promise<Taskdetails[]> {
+        const command = new GetCommand({
             TableName: "Todo",
+            Key: {
+                userId: userId,
+            },
         });
         const response: any = await this.docClient.send(command);
         console.log(response);
-        return response.Items as TodoDetails[];
+        return response.Item.tasks as Taskdetails[];
     }
 
-    async updateTask(userId:string,taskId: string, taskName: string, status: string): Promise<any> {
-        const command = new UpdateCommand({
-            TableName: "Todo",
-            Key: {
-                userId:userId,
-                "tasks.taskId": taskId
-            },
-            UpdateExpression: "set taskName = :taskName, #status = :status",
-            ExpressionAttributeValues: {
-                ":taskName": taskName,
-                ":status": status
-            },
-            ExpressionAttributeNames: {
-                "#status": "status"
-            }
-        });
-        const response = await this.docClient.send(command);
-        console.log(response);
-        return response;
-    }
-
-    async deleteTask(userId: string, taskId: string): Promise<any> {
-        const command = new UpdateCommand({
+    async updateTask(userId: string, taskId: string, taskName: string, status: string): Promise<any> {
+        const getCommand = new GetCommand({
             TableName: "Todo",
             Key: {
                 userId: userId
-            },
-            UpdateExpression: "REMOVE tasks[$.taskId = :taskId]",
-            ExpressionAttributeValues: {
-                ":taskId": taskId
             }
         });
-        const response = await this.docClient.send(command);
-        console.log(response);
-        return response;
+        const response: any = await this.docClient.send(getCommand);
+        const tasks = response.Item.tasks;
+
+
+        const taskToUpdate = tasks.find((task) => task.taskId === taskId);
+
+        if (taskToUpdate) {
+            taskToUpdate.taskName = taskName;
+            taskToUpdate.status = status;
+
+            const updateCommand = new UpdateCommand({
+                TableName: "Todo",
+                Key: {
+                    userId: userId
+                },
+                UpdateExpression: "set tasks = :tasks",
+                ExpressionAttributeValues: {
+                    ":tasks": tasks
+                }
+            });
+            const updateResponse = await this.docClient.send(updateCommand);
+            console.log(updateResponse);
+            return updateResponse;
+        } else {
+            return { error: "Task not found" };
+        }
     }
+
+    async deleteTask(userId: string, taskId: string): Promise<any> {
+        const getCommand = new GetCommand({
+            TableName: "Todo",
+            Key: {
+                userId: userId
+            }
+        });
+        const response: any = await this.docClient.send(getCommand);
+        const tasks = response.Item.tasks;
+
+        const taskToDelete = tasks.find((task) => task.taskId === taskId);
+
+        if (taskToDelete) {
+            const updatedTasks = tasks.filter((task) => task.taskId !== taskId);
+
+            const updateCommand = new UpdateCommand({
+                TableName: "Todo",
+                Key: {
+                    userId: userId
+                },
+                UpdateExpression: "set tasks = :tasks",
+                ExpressionAttributeValues: {
+                    ":tasks": updatedTasks
+                }
+            });
+            const updateResponse = await this.docClient.send(updateCommand);
+            console.log(updateResponse);
+            return updateResponse;
+        } else {
+            return { error: "Task not found" };
+        }
+    }
+
 }

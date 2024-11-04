@@ -7,13 +7,14 @@ exports.createJWT = createJWT;
 exports.verifyJWT = verifyJWT;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const uuid_1 = require("uuid");
-function createJWT(credentials) {
+function createJWT(userId) {
     const payload = {
-        userId: credentials.userId,
+        userId
     };
+    console.log(payload);
     const secretKey = 'todoTasks';
     const options = {
-        expiresIn: '200s'
+        expiresIn: '1hr'
     };
     try {
         const token = jsonwebtoken_1.default.sign(payload, secretKey, options);
@@ -30,12 +31,12 @@ function buildTokenResponse(token, jti) {
     return {
         token,
         token_type: "bearer",
-        expires_in: '200s',
+        expires_in: '1hr',
         scope: "read admin",
         jti
     };
 }
-function verifyJWT(token) {
+async function verifyJWT(token) {
     const secretKey = 'todoTasks';
     try {
         const decoded = jsonwebtoken_1.default.verify(token, secretKey);

@@ -35,48 +35,77 @@ class TodoRepository {
         console.log(response);
         return response;
     }
-    async getUsers() {
-        const command = new lib_dynamodb_1.ScanCommand({
-            TableName: "Todo",
-        });
-        const response = await this.docClient.send(command);
-        console.log(response);
-        return response.Items;
-    }
-    async updateTask(userId, taskId, taskName, status) {
-        const command = new lib_dynamodb_1.UpdateCommand({
+    async getUserTasks(userId) {
+        const command = new lib_dynamodb_1.GetCommand({
             TableName: "Todo",
             Key: {
                 userId: userId,
-                "tasks.taskId": taskId
             },
-            UpdateExpression: "set taskName = :taskName, #status = :status",
-            ExpressionAttributeValues: {
-                ":taskName": taskName,
-                ":status": status
-            },
-            ExpressionAttributeNames: {
-                "#status": "status"
-            }
         });
         const response = await this.docClient.send(command);
         console.log(response);
-        return response;
+        return response.Item.tasks;
     }
-    async deleteTask(userId, taskId) {
-        const command = new lib_dynamodb_1.UpdateCommand({
+    async updateTask(userId, taskId, taskName, status) {
+        const getCommand = new lib_dynamodb_1.GetCommand({
             TableName: "Todo",
             Key: {
                 userId: userId
-            },
-            UpdateExpression: "REMOVE tasks[$.taskId = :taskId]",
-            ExpressionAttributeValues: {
-                ":taskId": taskId
             }
         });
-        const response = await this.docClient.send(command);
-        console.log(response);
-        return response;
+        const response = await this.docClient.send(getCommand);
+        const tasks = response.Item.tasks;
+        const taskToUpdate = tasks.find((task) => task.taskId === taskId);
+        if (taskToUpdate) {
+            taskToUpdate.taskName = taskName;
+            taskToUpdate.status = status;
+            const updateCommand = new lib_dynamodb_1.UpdateCommand({
+                TableName: "Todo",
+                Key: {
+                    userId: userId
+                },
+                UpdateExpression: "set tasks = :tasks",
+                ExpressionAttributeValues: {
+                    ":tasks": tasks
+                }
+            });
+            const updateResponse = await this.docClient.send(updateCommand);
+            console.log(updateResponse);
+            return updateResponse;
+        }
+        else {
+            return { error: "Task not found" };
+        }
+    }
+    async deleteTask(userId, taskId) {
+        const getCommand = new lib_dynamodb_1.GetCommand({
+            TableName: "Todo",
+            Key: {
+                userId: userId
+            }
+        });
+        const response = await this.docClient.send(getCommand);
+        const tasks = response.Item.tasks;
+        const taskToDelete = tasks.find((task) => task.taskId === taskId);
+        if (taskToDelete) {
+            const updatedTasks = tasks.filter((task) => task.taskId !== taskId);
+            const updateCommand = new lib_dynamodb_1.UpdateCommand({
+                TableName: "Todo",
+                Key: {
+                    userId: userId
+                },
+                UpdateExpression: "set tasks = :tasks",
+                ExpressionAttributeValues: {
+                    ":tasks": updatedTasks
+                }
+            });
+            const updateResponse = await this.docClient.send(updateCommand);
+            console.log(updateResponse);
+            return updateResponse;
+        }
+        else {
+            return { error: "Task not found" };
+        }
     }
 }
 exports.TodoRepository = TodoRepository;

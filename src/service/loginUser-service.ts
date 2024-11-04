@@ -1,5 +1,5 @@
 import { TodoRepository } from "../repository/todo-repository";
-import { TodoDetails } from "../model/todo-model";
+import { TodoDetails, User } from "../model/todo-model";
 
 export class LoginUserService {
     private todoRepository:TodoRepository;
@@ -9,7 +9,9 @@ export class LoginUserService {
     }
 
 
-  async loginUserByUserId(userId: string): Promise<TodoDetails> {
-    return await this.todoRepository.loginUserByUserId(userId);
+  async loginUserByUserId(id: string): Promise<User> {
+    let response:any = await this.todoRepository.loginUserByUserId(id);
+    let {userId, password} = response.Item;
+    return {userId, password};
   }
 }

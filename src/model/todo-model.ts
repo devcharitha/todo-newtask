@@ -3,9 +3,16 @@ export interface TodoDetails {
     userId: string;
     password: string;
     tasks: Taskdetails[];
-}
-export interface Taskdetails{
+  }
+  
+  export interface User {
+    userId: string;
+    password: string;
+  }
+  
+  export interface Taskdetails {
     taskId: string;
     taskName: string;
     status: string;
-}
+  }
+  

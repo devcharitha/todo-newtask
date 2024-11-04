@@ -1,4 +1,4 @@
-import { TodoDetails } from '../model/todo-model';
+import { TodoDetails, User } from '../model/todo-model';
 import bcrypt from 'bcryptjs';
 import { LoginUserService } from '../service/loginUser-service';
 import {validateUserName,validateUserId,validatePassword,validateTaskName,validateStatus} from '../validation/request-validation';
@@ -34,14 +34,14 @@ export class ValidationService {
             throw new Error("Invalid Password format");
         }
     }
-    async validateUser(userId: string, password:string ): Promise<TodoDetails> {
+    async validateUser({userId, password}): Promise<string> {
         try {
-            const credentials: any = await this.loginUserService.loginUserByUserId(userId);
-            const isPasswordValid = await bcrypt.compare(password, credentials.Item.password);
-        if (!credentials || credentials.Item.userId !== userId || !isPasswordValid) {
+            const user: User = await this.loginUserService.loginUserByUserId(userId);
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!user || user.userId !== userId || !isPasswordValid) {
             throw new Error('Unauthorized');
         }
-            return credentials;
+            return user.userId;
         } catch (error) {
             throw error;
         }
