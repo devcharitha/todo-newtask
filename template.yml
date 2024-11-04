@@ -28,7 +28,7 @@ Resources:
       FunctionName: Todo-Users-GET 
       Runtime: nodejs20.x
       Role: !GetAtt lambdaExecutionRole.Arn
-      Handler: todo-task/dist/controller/todo-controller.getUsersHandler
+      Handler: todo-task/dist/controller/todo-controller.getUserTasksHandler
       Code:
         S3Bucket: todo-tasks
         S3Key: todo-task.zip
