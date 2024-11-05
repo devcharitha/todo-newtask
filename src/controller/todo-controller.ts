@@ -1,4 +1,4 @@
-import { buildAuthenticateResponse, buildResponse, buildUserResponse } from "../builder/todo-builder";
+import { buildAuthenticateResponse,buildErrorResponse,buildSuccessResponse, buildUserResponse } from "../builder/todo-builder";
 import { v4 as uuidv4 } from 'uuid';
 import { TodoRepository } from "../repository/todo-repository";
 import { CreateUserService } from "../service/createUser-service";
@@ -20,14 +20,14 @@ const validationService = new ValidationService(loginUserService);
 
 // const event = {
     // "headers": {
-    //     "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJyM2k4dDYiLCJpYXQiOjE3MzA3MTgyMDQsImV4cCI6MTczMDcyMTgwNH0._bYclfoicOQ0tEbBDDsd2xtrLjxEYI87nSIjQC0XKVg"
+    //     "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5OWY3czMiLCJpYXQiOjE3MzA3OTIxODEsImV4cCI6MTczMDc5NTc4MX0.tIvriipBWDeGjH7yKvZBfOvyvHquZjfnzwgxlfArK-I"
     // },
     // httpMethod:"GET",
-    // resource: "/delete-task/{userId}",
-    // pathParameters: { userId: "r3i8t6" },
-    // body:"{\"taskId\":\"ab7b865e-5943-429c-8851-fda05dde65d7\"}"
+    // resource: "/getUsers/{userId}",
+    // pathParameters: { userId: "y9f7s3" },
+    // body:"{\"taskId\":\"0989b3c0-0e38-4ff2-b8c3-03834542363b\"}"
     // body: "{\"taskId\":\"ab7b865e-5943-429c-8851-fda05dde65d7\",\"taskName\":\"coding\",\"status\":\"Complete\"}"
-    // body: "{\"userId\":\"r3i8t6\",\"password\":\"Mahitha@18\"}"
+    // body: "{\"userId\":\"y9f7s3\",\"password\":\"Niharika@13\"}"
     // body:"{\"userName\":\"Venkatram\",\"userId\":\"r3i8t6\",\"password\":\"Mahitha@18\",\"taskName\":\"Give Assessment\",\"status\":\"Incomplete\"}"
 
 // }
@@ -66,7 +66,7 @@ export const createUserHandler = async (event) => {
         };
 
         await createUserService.createUser(todoDetails);
-        let response = buildResponse(201, 'User added successfully');
+        let response = buildSuccessResponse(201, 'User added successfully');
         console.log(response);
         return response;
 
@@ -74,17 +74,17 @@ export const createUserHandler = async (event) => {
         console.log(error);
         console.log(error);
         if (error instanceof Error) {
-            let errorResponse = buildResponse(400, 'Not able to add user');
+            let errorResponse = buildErrorResponse(400, 'Not able to add user');
             console.log(errorResponse);
             return errorResponse;
         } else {
-            let errorResponse = buildResponse(500, 'Internal Server Error');
+            let errorResponse = buildErrorResponse(500, 'Internal Server Error');
             console.log(errorResponse);
             return errorResponse;
         }
     }
 };
-createUserHandler(event);
+// createUserHandler(event);
 
 export const loginUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
@@ -103,15 +103,15 @@ export const loginUserHandler = async (event) => {
     catch (error) {
         console.log(error);
         if (error.message === "Invalid UserId format" || error.message === "Invalid Password format") {
-            let errorMessage = buildResponse(400, error.message);
+            let errorMessage = buildErrorResponse(400, error.message);
             console.log(errorMessage);
             return errorMessage;
         } else if (error.message === "Unauthorized") {
-            let err = buildResponse(401, error.message);
+            let err = buildErrorResponse(401, error.message);
             console.log(err);
             return err;
         } else {
-            let error = buildResponse(500, 'Internal server error');
+            let error = buildErrorResponse(500, 'Internal server error');
             console.log(error);
             return error;
         }
@@ -123,15 +123,15 @@ export const getUserTasksHandler = async (event) => {
     let userId = event.pathParameters.userId;
     const authHeaders = event.headers['Authorization'];
     if (!authHeaders) {
-        return buildResponse(400, "Authorization header not found");
+        return buildErrorResponse(400, "Authorization header not found");
     } else if (!userId) {
-        return buildResponse(400, "No parameters");
+        return buildErrorResponse(400, "No parameters");
     } else {
         try {
             const token = authHeaders.split(' ')[1];
             if (!token) {
                 console.log("No Token");
-                return buildResponse(400, "Authorization token is required");
+                return buildErrorResponse(400, "Authorization token is required");
             }
             await verifyJWT(token);
             const tasks = await getUserTasksService.getUserTasks(userId);
@@ -141,15 +141,15 @@ export const getUserTasksHandler = async (event) => {
 
         } catch (error) {
             if (error.message === "Token verification failed") {
-                let tokenResponse = buildResponse(401, "Token verification failed");
+                let tokenResponse = buildErrorResponse(401, "Token verification failed");
                 console.log(tokenResponse);
                 return tokenResponse;
             } else if (error.message === "Unauthorized user") {
-                let tokenResponse = buildResponse(401, "Unauthorized user");
+                let tokenResponse = buildErrorResponse(401, "Unauthorized user");
                 console.log(tokenResponse);
                 return tokenResponse;
             } else {
-                let tokenResponse = buildResponse(500, "Internal Server error");
+                let tokenResponse = buildErrorResponse(500, "Internal Server error");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
@@ -164,17 +164,17 @@ export const updateTaskHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     if (!authHeaders) {
         console.log("No Auth");
-        return buildResponse(400, "Authorization header not found");
+        return buildErrorResponse(400, "Authorization header not found");
     } else if (!userId) {
-        return buildResponse(400, "No user id found");
+        return buildErrorResponse(400, "No user id found");
     } else if (!requestBody) {
-        return buildResponse(400, "No request body found");
+        return buildErrorResponse(400, "No request body found");
     } else {
         try {
             const token = authHeaders.split(' ')[1];
             if (!token) {
                 console.log("No Token");
-                return buildResponse(400, "Authorization token is required");
+                return buildErrorResponse(400, "Authorization token is required");
             }
             await verifyJWT(token);
 
@@ -183,21 +183,21 @@ export const updateTaskHandler = async (event) => {
             const status = requestBody.status;
 
             await updateTaskService.updateTask(userId, taskId, taskName, status);
-            let updatedResponse= buildResponse(200, 'Task updated successfully');
+            let updatedResponse= buildSuccessResponse(200, 'Task updated successfully');
             console.log(updatedResponse);
             return updatedResponse;
         } catch (error) {
             console.log(error);
             if (error.message === "Token verification failed") {
-                let tokenResponse = buildResponse(401, "Token verification failed");
+                let tokenResponse = buildErrorResponse(401, "Token verification failed");
                 console.log(tokenResponse);
                 return tokenResponse;
             } else if (error.message === "Unauthorized user") {
-                let tokenResponse = buildResponse(401, "Unauthorized user");
+                let tokenResponse = buildErrorResponse(401, "Unauthorized user");
                 console.log(tokenResponse);
                 return tokenResponse;
             } else {
-                let tokenResponse = buildResponse(500, "Internal Server error");
+                let tokenResponse = buildErrorResponse(500, "Internal Server error");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
@@ -212,37 +212,37 @@ export const deleteTaskHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     if (!authHeaders) {
         console.log("No Auth");
-        return buildResponse(400, "Authorization header not found");
+        return buildErrorResponse(400, "Authorization header not found");
     } else if (!userId) {
-        return buildResponse(400, "No user id found");
+        return buildErrorResponse(400, "No user id found");
     } else if (!requestBody) {
-        return buildResponse(400, "No request body found");
+        return buildErrorResponse(400, "No request body found");
     } else {
         try {
             const token = authHeaders.split(' ')[1];
             if (!token) {
                 console.log("No Token");
-                return buildResponse(400, "Authorization token is required");
+                return buildErrorResponse(400, "Authorization token is required");
             }
             await verifyJWT(token);
 
             const taskId = requestBody.taskId;
             await deleteTaskService.deleteTask(userId,taskId);
-            let deleteResponse= buildResponse(204, 'Task deleted successfully');
+            let deleteResponse= buildSuccessResponse(204, 'Task deleted successfully');
             console.log(deleteResponse)
             return deleteResponse;
         } catch (error) {
             console.log(error);
             if (error.message === "Token verification failed") {
-                let tokenResponse = buildResponse(401, "Token verification failed");
+                let tokenResponse = buildErrorResponse(401, "Token verification failed");
                 console.log(tokenResponse);
                 return tokenResponse;
             } else if (error.message === "Unauthorized user") {
-                let tokenResponse = buildResponse(401, "Unauthorized user");
+                let tokenResponse = buildErrorResponse(401, "Unauthorized user");
                 console.log(tokenResponse);
                 return tokenResponse;
             } else {
-                let tokenResponse = buildResponse(500, "Internal Server error");
+                let tokenResponse = buildErrorResponse(500, "Internal Server error");
                 console.log(tokenResponse);
                 return tokenResponse;
             }

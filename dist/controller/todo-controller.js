@@ -22,16 +22,16 @@ const deleteTaskService = new deleteTask_service_1.DeleteTaskService(new todo_re
 const loginUserService = new loginUser_service_1.LoginUserService(new todo_repository_1.TodoRepository());
 const validationService = new validation_service_1.ValidationService(loginUserService);
 const event = {
-    // "headers": {
-    //     "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJyM2k4dDYiLCJpYXQiOjE3MzA3MTgyMDQsImV4cCI6MTczMDcyMTgwNH0._bYclfoicOQ0tEbBDDsd2xtrLjxEYI87nSIjQC0XKVg"
-    // },
+    "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5OWY3czMiLCJpYXQiOjE3MzA3OTIxODEsImV4cCI6MTczMDc5NTc4MX0.tIvriipBWDeGjH7yKvZBfOvyvHquZjfnzwgxlfArK-I"
+    },
     // httpMethod:"GET",
-    // resource: "/delete-task/{userId}",
-    // pathParameters: { userId: "r3i8t6" },
-    // body:"{\"taskId\":\"ab7b865e-5943-429c-8851-fda05dde65d7\"}"
+    resource: "/getUsers/{userId}",
+    pathParameters: { userId: "y9f7s3" },
+    // body:"{\"taskId\":\"0989b3c0-0e38-4ff2-b8c3-03834542363b\"}"
     // body: "{\"taskId\":\"ab7b865e-5943-429c-8851-fda05dde65d7\",\"taskName\":\"coding\",\"status\":\"Complete\"}"
-    // body: "{\"userId\":\"r3i8t6\",\"password\":\"Mahitha@18\"}"
-    body: "{\"userName\":\"Venkatram\",\"userId\":\"r3i8t6\",\"password\":\"Mahitha@18\",\"taskName\":\"Give Assessment\",\"status\":\"Incomplete\"}"
+    // body: "{\"userId\":\"y9f7s3\",\"password\":\"Niharika@13\"}"
+    // body:"{\"userName\":\"Venkatram\",\"userId\":\"r3i8t6\",\"password\":\"Mahitha@18\",\"taskName\":\"Give Assessment\",\"status\":\"Incomplete\"}"
 };
 const createUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
@@ -61,7 +61,7 @@ const createUserHandler = async (event) => {
             tasks: [task]
         };
         await createUserService.createUser(todoDetails);
-        let response = (0, todo_builder_1.buildResponse)(201, 'User added successfully');
+        let response = (0, todo_builder_1.buildSuccessResponse)(201, 'User added successfully');
         console.log(response);
         return response;
     }
@@ -69,19 +69,19 @@ const createUserHandler = async (event) => {
         console.log(error);
         console.log(error);
         if (error instanceof Error) {
-            let errorResponse = (0, todo_builder_1.buildResponse)(400, 'Not able to add user');
+            let errorResponse = (0, todo_builder_1.buildErrorResponse)(400, 'Not able to add user');
             console.log(errorResponse);
             return errorResponse;
         }
         else {
-            let errorResponse = (0, todo_builder_1.buildResponse)(500, 'Internal Server Error');
+            let errorResponse = (0, todo_builder_1.buildErrorResponse)(500, 'Internal Server Error');
             console.log(errorResponse);
             return errorResponse;
         }
     }
 };
 exports.createUserHandler = createUserHandler;
-(0, exports.createUserHandler)(event);
+// createUserHandler(event);
 const loginUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     try {
@@ -96,17 +96,17 @@ const loginUserHandler = async (event) => {
     catch (error) {
         console.log(error);
         if (error.message === "Invalid UserId format" || error.message === "Invalid Password format") {
-            let errorMessage = (0, todo_builder_1.buildResponse)(400, error.message);
+            let errorMessage = (0, todo_builder_1.buildErrorResponse)(400, error.message);
             console.log(errorMessage);
             return errorMessage;
         }
         else if (error.message === "Unauthorized") {
-            let err = (0, todo_builder_1.buildResponse)(401, error.message);
+            let err = (0, todo_builder_1.buildErrorResponse)(401, error.message);
             console.log(err);
             return err;
         }
         else {
-            let error = (0, todo_builder_1.buildResponse)(500, 'Internal server error');
+            let error = (0, todo_builder_1.buildErrorResponse)(500, 'Internal server error');
             console.log(error);
             return error;
         }
@@ -118,17 +118,17 @@ const getUserTasksHandler = async (event) => {
     let userId = event.pathParameters.userId;
     const authHeaders = event.headers['Authorization'];
     if (!authHeaders) {
-        return (0, todo_builder_1.buildResponse)(400, "Authorization header not found");
+        return (0, todo_builder_1.buildErrorResponse)(400, "Authorization header not found");
     }
     else if (!userId) {
-        return (0, todo_builder_1.buildResponse)(400, "No parameters");
+        return (0, todo_builder_1.buildErrorResponse)(400, "No parameters");
     }
     else {
         try {
             const token = authHeaders.split(' ')[1];
             if (!token) {
                 console.log("No Token");
-                return (0, todo_builder_1.buildResponse)(400, "Authorization token is required");
+                return (0, todo_builder_1.buildErrorResponse)(400, "Authorization token is required");
             }
             await (0, token_service_1.verifyJWT)(token);
             const tasks = await getUserTasksService.getUserTasks(userId);
@@ -138,17 +138,17 @@ const getUserTasksHandler = async (event) => {
         }
         catch (error) {
             if (error.message === "Token verification failed") {
-                let tokenResponse = (0, todo_builder_1.buildResponse)(401, "Token verification failed");
+                let tokenResponse = (0, todo_builder_1.buildErrorResponse)(401, "Token verification failed");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
             else if (error.message === "Unauthorized user") {
-                let tokenResponse = (0, todo_builder_1.buildResponse)(401, "Unauthorized user");
+                let tokenResponse = (0, todo_builder_1.buildErrorResponse)(401, "Unauthorized user");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
             else {
-                let tokenResponse = (0, todo_builder_1.buildResponse)(500, "Internal Server error");
+                let tokenResponse = (0, todo_builder_1.buildErrorResponse)(500, "Internal Server error");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
@@ -156,51 +156,51 @@ const getUserTasksHandler = async (event) => {
     }
 };
 exports.getUserTasksHandler = getUserTasksHandler;
-// getUserTasksHandler(event);
+(0, exports.getUserTasksHandler)(event);
 const updateTaskHandler = async (event) => {
     let userId = event.pathParameters.userId;
     const authHeaders = event.headers['Authorization'];
     const requestBody = JSON.parse(event.body);
     if (!authHeaders) {
         console.log("No Auth");
-        return (0, todo_builder_1.buildResponse)(400, "Authorization header not found");
+        return (0, todo_builder_1.buildErrorResponse)(400, "Authorization header not found");
     }
     else if (!userId) {
-        return (0, todo_builder_1.buildResponse)(400, "No user id found");
+        return (0, todo_builder_1.buildErrorResponse)(400, "No user id found");
     }
     else if (!requestBody) {
-        return (0, todo_builder_1.buildResponse)(400, "No request body found");
+        return (0, todo_builder_1.buildErrorResponse)(400, "No request body found");
     }
     else {
         try {
             const token = authHeaders.split(' ')[1];
             if (!token) {
                 console.log("No Token");
-                return (0, todo_builder_1.buildResponse)(400, "Authorization token is required");
+                return (0, todo_builder_1.buildErrorResponse)(400, "Authorization token is required");
             }
             await (0, token_service_1.verifyJWT)(token);
             const taskId = requestBody.taskId;
             const taskName = requestBody.taskName;
             const status = requestBody.status;
             await updateTaskService.updateTask(userId, taskId, taskName, status);
-            let updatedResponse = (0, todo_builder_1.buildResponse)(200, 'Task updated successfully');
+            let updatedResponse = (0, todo_builder_1.buildSuccessResponse)(200, 'Task updated successfully');
             console.log(updatedResponse);
             return updatedResponse;
         }
         catch (error) {
             console.log(error);
             if (error.message === "Token verification failed") {
-                let tokenResponse = (0, todo_builder_1.buildResponse)(401, "Token verification failed");
+                let tokenResponse = (0, todo_builder_1.buildErrorResponse)(401, "Token verification failed");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
             else if (error.message === "Unauthorized user") {
-                let tokenResponse = (0, todo_builder_1.buildResponse)(401, "Unauthorized user");
+                let tokenResponse = (0, todo_builder_1.buildErrorResponse)(401, "Unauthorized user");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
             else {
-                let tokenResponse = (0, todo_builder_1.buildResponse)(500, "Internal Server error");
+                let tokenResponse = (0, todo_builder_1.buildErrorResponse)(500, "Internal Server error");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
@@ -215,42 +215,42 @@ const deleteTaskHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     if (!authHeaders) {
         console.log("No Auth");
-        return (0, todo_builder_1.buildResponse)(400, "Authorization header not found");
+        return (0, todo_builder_1.buildErrorResponse)(400, "Authorization header not found");
     }
     else if (!userId) {
-        return (0, todo_builder_1.buildResponse)(400, "No user id found");
+        return (0, todo_builder_1.buildErrorResponse)(400, "No user id found");
     }
     else if (!requestBody) {
-        return (0, todo_builder_1.buildResponse)(400, "No request body found");
+        return (0, todo_builder_1.buildErrorResponse)(400, "No request body found");
     }
     else {
         try {
             const token = authHeaders.split(' ')[1];
             if (!token) {
                 console.log("No Token");
-                return (0, todo_builder_1.buildResponse)(400, "Authorization token is required");
+                return (0, todo_builder_1.buildErrorResponse)(400, "Authorization token is required");
             }
             await (0, token_service_1.verifyJWT)(token);
             const taskId = requestBody.taskId;
             await deleteTaskService.deleteTask(userId, taskId);
-            let deleteResponse = (0, todo_builder_1.buildResponse)(204, 'Task deleted successfully');
+            let deleteResponse = (0, todo_builder_1.buildSuccessResponse)(204, 'Task deleted successfully');
             console.log(deleteResponse);
             return deleteResponse;
         }
         catch (error) {
             console.log(error);
             if (error.message === "Token verification failed") {
-                let tokenResponse = (0, todo_builder_1.buildResponse)(401, "Token verification failed");
+                let tokenResponse = (0, todo_builder_1.buildErrorResponse)(401, "Token verification failed");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
             else if (error.message === "Unauthorized user") {
-                let tokenResponse = (0, todo_builder_1.buildResponse)(401, "Unauthorized user");
+                let tokenResponse = (0, todo_builder_1.buildErrorResponse)(401, "Unauthorized user");
                 console.log(tokenResponse);
                 return tokenResponse;
             }
             else {
-                let tokenResponse = (0, todo_builder_1.buildResponse)(500, "Internal Server error");
+                let tokenResponse = (0, todo_builder_1.buildErrorResponse)(500, "Internal Server error");
                 console.log(tokenResponse);
                 return tokenResponse;
             }

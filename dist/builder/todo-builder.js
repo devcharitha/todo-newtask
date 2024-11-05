@@ -1,52 +1,51 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildResponse = buildResponse;
+exports.buildSuccessResponse = buildSuccessResponse;
+exports.buildErrorResponse = buildErrorResponse;
 exports.buildUserResponse = buildUserResponse;
 exports.buildAuthenticateResponse = buildAuthenticateResponse;
-function buildResponse(statusCode, message) {
-    return {
-        "jsonapi": {
-            "version": "1.0"
+function buildSuccessResponse(statusCode, message) {
+    let response = {
+        "success": {
+            message
         },
-        "data": {
-            "attributes": {
-                statusCode,
-                message
-            },
-        }
+    };
+    return {
+        statusCode,
+        body: JSON.stringify(response)
+    };
+}
+function buildErrorResponse(statusCode, message) {
+    let response = {
+        "error": {
+            message
+        },
+    };
+    return {
+        statusCode,
+        body: JSON.stringify(response)
     };
 }
 function buildUserResponse(statusCode, message, tasks) {
+    let response = {
+        tasks
+    };
     return {
-        "jsonapi": {
-            "version": "1.0"
-        },
-        "data": {
-            "attributes": {
-                statusCode,
-                message,
-                tasks
-            },
-        }
+        statusCode,
+        body: JSON.stringify(response)
     };
 }
 function buildAuthenticateResponse(statusCode, message, payload) {
+    let token = {
+        "access_token": payload["token"],
+        "token_type": payload["token_type"],
+        "expires_in": payload["expires_in"],
+        "scope": payload["scope"],
+        "jti": payload["jti"]
+    };
     return {
-        "jsonapi": {
-            "version": "1.0"
-        },
-        "data": {
-            "type": "token",
-            "attributes": {
-                statusCode,
-                message,
-                acces_token: payload.token,
-                token_type: payload.token_type,
-                expires_in: payload.expires_in,
-                scope: payload.scope,
-                jti: payload.jti
-            },
-        },
+        statusCode,
+        body: JSON.stringify(token),
     };
 }
 //# sourceMappingURL=todo-builder.js.map
