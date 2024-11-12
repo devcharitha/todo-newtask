@@ -184,7 +184,7 @@ Resources:
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoUsersGET.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
-                  httpMethod: "GET"
+                  httpMethod: "POST"
                   type: "aws_proxy"
 
           /update-task/{userId}:
@@ -213,7 +213,7 @@ Resources:
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoUpdateTask.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
-                  httpMethod: "PUT"
+                  httpMethod: "POST"
                   type: "aws_proxy"
 
           /delete-task/{userId}:
@@ -235,7 +235,7 @@ Resources:
               x-amazon-apigateway-integration:
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoDeleteTask.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
-                  httpMethod: "DELETE"
+                  httpMethod: "POST"
                   type: "aws_proxy"
 
         components:

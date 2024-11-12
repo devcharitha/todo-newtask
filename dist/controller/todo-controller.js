@@ -21,18 +21,18 @@ const updateTaskService = new updateTask_service_1.UpdateTaskService(new todo_re
 const deleteTaskService = new deleteTask_service_1.DeleteTaskService(new todo_repository_1.TodoRepository());
 const loginUserService = new loginUser_service_1.LoginUserService(new todo_repository_1.TodoRepository());
 const validationService = new validation_service_1.ValidationService(loginUserService);
-const event = {
-    "headers": {
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5OWY3czMiLCJpYXQiOjE3MzA3OTIxODEsImV4cCI6MTczMDc5NTc4MX0.tIvriipBWDeGjH7yKvZBfOvyvHquZjfnzwgxlfArK-I"
-    },
-    // httpMethod:"GET",
-    resource: "/getUsers/{userId}",
-    pathParameters: { userId: "y9f7s3" },
-    // body:"{\"taskId\":\"0989b3c0-0e38-4ff2-b8c3-03834542363b\"}"
-    // body: "{\"taskId\":\"ab7b865e-5943-429c-8851-fda05dde65d7\",\"taskName\":\"coding\",\"status\":\"Complete\"}"
-    // body: "{\"userId\":\"y9f7s3\",\"password\":\"Niharika@13\"}"
-    // body:"{\"userName\":\"Venkatram\",\"userId\":\"r3i8t6\",\"password\":\"Mahitha@18\",\"taskName\":\"Give Assessment\",\"status\":\"Incomplete\"}"
-};
+// const event = {
+// "headers": {
+//     "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5OWY3czMiLCJpYXQiOjE3MzA3OTIxODEsImV4cCI6MTczMDc5NTc4MX0.tIvriipBWDeGjH7yKvZBfOvyvHquZjfnzwgxlfArK-I"
+// },
+// httpMethod:"GET",
+// resource: "/getUsers/{userId}",
+// pathParameters: { userId: "y9f7s3" },
+// body:"{\"taskId\":\"0989b3c0-0e38-4ff2-b8c3-03834542363b\"}"
+// body: "{\"taskId\":\"ab7b865e-5943-429c-8851-fda05dde65d7\",\"taskName\":\"coding\",\"status\":\"Complete\"}"
+// body: "{\"userId\":\"y9f7s3\",\"password\":\"Niharika@13\"}"
+// body:"{\"userName\":\"Venkatram\",\"userId\":\"r3i8t6\",\"password\":\"Mahitha@18\",\"taskName\":\"Give Assessment\",\"status\":\"Incomplete\"}"
+// }
 const createUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);
     try {
@@ -156,7 +156,7 @@ const getUserTasksHandler = async (event) => {
     }
 };
 exports.getUserTasksHandler = getUserTasksHandler;
-(0, exports.getUserTasksHandler)(event);
+// getUserTasksHandler(event);
 const updateTaskHandler = async (event) => {
     let userId = event.pathParameters.userId;
     const authHeaders = event.headers['Authorization'];
