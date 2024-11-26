@@ -6,8 +6,8 @@ class UpdateTaskService {
     constructor(todoRepository) {
         this.todoRepository = todoRepository;
     }
-    async updateTask(userId, taskId, taskName, status) {
-        return this.todoRepository.updateTask(userId, taskId, taskName, status);
+    async updateTask(userId, taskId, status) {
+        return this.todoRepository.updateTask(userId, taskId, status);
     }
 }
 exports.UpdateTaskService = UpdateTaskService;

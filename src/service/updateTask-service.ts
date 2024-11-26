@@ -7,8 +7,8 @@ export class UpdateTaskService{
         this.todoRepository=todoRepository;
     }
 
-    async updateTask(userId:string,taskId: string, taskName: string, status: string): Promise<any> {
-        return this.todoRepository.updateTask(userId,taskId, taskName, status);
+    async updateTask(userId:string,taskId: string, status: string): Promise<any> {
+        return this.todoRepository.updateTask(userId,taskId,status);
     }
 }
 

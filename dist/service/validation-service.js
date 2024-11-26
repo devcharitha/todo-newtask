@@ -39,7 +39,10 @@ class ValidationService {
     async validateUser({ userId, password }) {
         try {
             const user = await this.loginUserService.loginUserByUserId(userId);
-            const isPasswordValid = await bcryptjs_1.default.compare(password, user.password);
+            let isPasswordValid = false;
+            if (user) {
+                isPasswordValid = await bcryptjs_1.default.compare(password, user.password);
+            }
             if (!user || user.userId !== userId || !isPasswordValid) {
                 throw new Error('Unauthorized');
             }

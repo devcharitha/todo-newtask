@@ -6,8 +6,8 @@ class CreateTaskService {
     constructor(todoRepository) {
         this.todoRepository = todoRepository;
     }
-    async createTask(todoDetails) {
-        return await this.todoRepository.createTask(todoDetails);
+    async createTask(userId, taskDetails) {
+        return await this.todoRepository.createTask(userId, taskDetails);
     }
 }
 exports.CreateTaskService = CreateTaskService;

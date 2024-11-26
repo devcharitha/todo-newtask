@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TodoRepository = void 0;
 const client_dynamodb_1 = require("@aws-sdk/client-dynamodb");
 const lib_dynamodb_1 = require("@aws-sdk/lib-dynamodb");
+const uuid_1 = require("uuid");
 class TodoRepository {
     client;
     docClient;
@@ -17,11 +18,10 @@ class TodoRepository {
                 userName: requestBody.userName,
                 userId: requestBody.userId,
                 password: requestBody.password,
-                tasks: requestBody.tasks
             }
         });
         const response = await this.client.send(command);
-        console.log(response);
+        console.log("Create User Response:", response);
         return response;
     }
     async loginUserByUserId(userId) {
@@ -32,80 +32,90 @@ class TodoRepository {
             },
         });
         const response = await this.docClient.send(command);
-        console.log(response);
+        console.log("Login User Response:", response);
         return response;
     }
-    async getUserTasks(userId) {
+    async createTask(userId, requestBody) {
         const command = new lib_dynamodb_1.GetCommand({
             TableName: "Todo",
             Key: {
-                userId: userId,
-            },
+                userId: userId
+            }
         });
         const response = await this.docClient.send(command);
-        console.log(response);
-        return response.Item.tasks;
+        if (response.Item) {
+            const newTask = {
+                taskId: (0, uuid_1.v4)(),
+                taskName: requestBody.taskName,
+                status: requestBody.status
+            };
+            const existingTasks = response.Item.tasks || [];
+            const updatedTasks = [...existingTasks, newTask];
+            const command1 = new lib_dynamodb_1.PutCommand({
+                TableName: "Todo-task",
+                Item: {
+                    userId: response.Item.userId,
+                    tasks: updatedTasks
+                }
+            });
+            const res = await this.docClient.send(command1);
+            console.log("Create Task Response:", res);
+            return newTask;
+        }
+        else {
+            throw new Error("User not found to create task");
+        }
     }
-    async updateTask(userId, taskId, taskName, status) {
-        const getCommand = new lib_dynamodb_1.GetCommand({
-            TableName: "Todo",
+    async getUserTasks(userId) {
+        const command = new lib_dynamodb_1.GetCommand({
+            TableName: "Todo-task",
             Key: {
                 userId: userId
             }
         });
-        const response = await this.docClient.send(getCommand);
-        const tasks = response.Item.tasks;
-        const taskToUpdate = tasks.find((task) => task.taskId === taskId);
-        if (taskToUpdate) {
-            taskToUpdate.taskName = taskName;
-            taskToUpdate.status = status;
-            const updateCommand = new lib_dynamodb_1.UpdateCommand({
-                TableName: "Todo",
-                Key: {
-                    userId: userId
-                },
-                UpdateExpression: "set tasks = :tasks",
-                ExpressionAttributeValues: {
-                    ":tasks": tasks
-                }
-            });
-            const updateResponse = await this.docClient.send(updateCommand);
-            console.log(updateResponse);
-            return updateResponse;
+        const response = await this.docClient.send(command);
+        console.log("Get User Tasks Response:", response);
+        if (response.Item) {
+            return response.Item.tasks || [];
         }
         else {
-            return { error: "Task not found" };
+            throw new Error("User not found");
         }
+    }
+    async updateTask(userId, taskId, newStatus) {
+        const tasks = await this.getUserTasks(userId);
+        const taskIndex = tasks.findIndex(task => task.taskId === taskId);
+        if (taskIndex === -1) {
+            throw new Error("Task not found");
+        }
+        tasks[taskIndex].status = newStatus;
+        const command = new lib_dynamodb_1.PutCommand({
+            TableName: "Todo-task",
+            Item: {
+                userId: userId,
+                tasks: tasks
+            }
+        });
+        const response = await this.docClient.send(command);
+        console.log("Update Task Status Response:", response);
+        return tasks[taskIndex];
     }
     async deleteTask(userId, taskId) {
-        const getCommand = new lib_dynamodb_1.GetCommand({
-            TableName: "Todo",
-            Key: {
-                userId: userId
+        const tasks = await this.getUserTasks(userId);
+        const taskIndex = tasks.findIndex(task => task.taskId === taskId);
+        if (taskIndex === -1) {
+            throw new Error("Task not found");
+        }
+        const updatedTasks = tasks.filter(task => task.taskId !== taskId);
+        const command = new lib_dynamodb_1.PutCommand({
+            TableName: "Todo-task",
+            Item: {
+                userId: userId,
+                tasks: updatedTasks
             }
         });
-        const response = await this.docClient.send(getCommand);
-        const tasks = response.Item.tasks;
-        const taskToDelete = tasks.find((task) => task.taskId === taskId);
-        if (taskToDelete) {
-            const updatedTasks = tasks.filter((task) => task.taskId !== taskId);
-            const updateCommand = new lib_dynamodb_1.UpdateCommand({
-                TableName: "Todo",
-                Key: {
-                    userId: userId
-                },
-                UpdateExpression: "set tasks = :tasks",
-                ExpressionAttributeValues: {
-                    ":tasks": updatedTasks
-                }
-            });
-            const updateResponse = await this.docClient.send(updateCommand);
-            console.log(updateResponse);
-            return updateResponse;
-        }
-        else {
-            return { error: "Task not found" };
-        }
+        const response = await this.docClient.send(command);
+        console.log("Delete Task Response:", response);
     }
 }
 exports.TodoRepository = TodoRepository;

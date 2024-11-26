@@ -22,10 +22,21 @@ Resources:
         S3Bucket: todo-tasks
         S3Key: todo-task.zip
 
-  TodoUsersGET:
+  TodoCreateTask:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: Todo-Users-GET 
+      FunctionName: Todo-CreateTask-POST
+      Runtime: nodejs20.x
+      Role: !GetAtt lambdaExecutionRole.Arn
+      Handler: todo-task/dist/controller/todo-controller.createTaskHandler
+      Code:
+        S3Bucket: todo-tasks
+        S3Key: todo-task.zip 
+
+  TodoUserTasks:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: Todo-UserTasks-GET 
       Runtime: nodejs20.x
       Role: !GetAtt lambdaExecutionRole.Arn
       Handler: todo-task/dist/controller/todo-controller.getUserTasksHandler
@@ -33,7 +44,7 @@ Resources:
         S3Bucket: todo-tasks
         S3Key: todo-task.zip
 
-  TodoUpdateTask :
+  TodoUpdateTask:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: Todo-UpdateTask-UPDATE 
@@ -90,7 +101,7 @@ Resources:
         paths: 
           /createUser:
             post:
-              description: creating user with list of task
+              description: creating user
               requestBody:
                 required: true
                 content:
@@ -118,7 +129,7 @@ Resources:
                   type: "aws_proxy"
           /loginUser:
             post:
-              description: creating user with list of task
+              description: login user with proper credentials
               requestBody:
                 required: true
                 content:
@@ -164,16 +175,65 @@ Resources:
                   passthroughBehavior: "when_no_match"
                   httpMethod: "POST"
                   type: "aws_proxy"
-          /getUsers/{userId}:
-            get:
-              description: Get all the users.
+
+          /createTask:
+            post:
+              description: create a task for a user using userId.
+              requestBody:
+                required: true
+                content:
+                  application/vnd.api+json:
+                    schema:
+                      $ref: '#/components/schemas/Task'
               responses:
                 "200":
-                  description: retrieved all users successfully
+                  description: created the task
                   content:
                     application/vnd.api+json:
                       schema:
-                        $ref: '#/components/schemas/GetUsers' 
+                        $ref: '#/components/schemas/Task'
+                "401":
+                  description: Unauthorized
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/UnauthorizedError'
+                "400":
+                  description: couldnot create the task
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/BadRequest'
+
+              x-amazon-apigateway-integration:
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoCreateTask.Arn}/invocations"
+                  passthroughBehavior: "when_no_match"
+                  httpMethod: "POST"
+                  type: "aws_proxy"
+
+          /getUserTasks/{userId}:
+            get:
+              description: Get user tasks.
+              parameters:
+                - in: path
+                  name: userId
+                  required: true
+                  schema:
+                    type: string
+                  description: The ID of the user
+              responses:
+                "200":
+                  description: retrieved all user tasks  
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/GetUsers'
+                "401":
+                  description: Unauthorized
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/UnauthorizedError'
                 "400":
                   description: users details are not retrived
                   content:
@@ -182,14 +242,27 @@ Resources:
                         $ref: '#/components/schemas/BadRequest'
 
               x-amazon-apigateway-integration:
-                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoUsersGET.Arn}/invocations"
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TodoUserTasks.Arn}/invocations"
                   passthroughBehavior: "when_no_match"
                   httpMethod: "POST"
                   type: "aws_proxy"
 
-          /update-task/{userId}:
+          /update-task:
             put:
               description: updating user task in the list.
+              parameters:
+                - in: query
+                  name: userId
+                  required: true
+                  schema:
+                    type: string
+                  description: The ID of the user
+                - in: query
+                  name: taskId
+                  required: true
+                  schema:
+                    type: string
+                  description: The ID of the task
               requestBody:
                 required: true
                 content:
@@ -203,6 +276,12 @@ Resources:
                     application/vnd.api+json:
                       schema:
                         $ref: '#/components/schemas/UpdateTask'
+                "401":
+                  description: Unauthorized
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/UnauthorizedError'
                 "400":
                   description: cannot updated the user task
                   content:
@@ -216,16 +295,35 @@ Resources:
                   httpMethod: "POST"
                   type: "aws_proxy"
 
-          /delete-task/{userId}:
+          /delete-task:
             delete:
               description: deleting a task from the user tasks list.
+              parameters:
+                - in: query
+                  name: userId
+                  required: true
+                  schema:
+                    type: string
+                  description: The ID of the user
+                - in: query
+                  name: taskId
+                  required: true
+                  schema:
+                    type: string
+                  description: The ID of the task
               responses:
                 "200":
                   description: deleted a task successfully
                   content:
                     application/vnd.api+json:
                       schema:
-                        $ref: '#/components/schemas/UpdateTask'
+                        $ref: '#/components/schemas/DeleteTask'
+                "401":
+                  description: Unauthorized
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        $ref: '#/components/schemas/UnauthorizedError'
                 "400":
                   description: cannot delete task
                   content:
@@ -248,17 +346,8 @@ Resources:
                   type: string
                 userId:
                   type: string
-                tasks:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      taskId:
-                        type: string
-                      taskName:
-                        type: string
-                      status:
-                        type: string
+                password:
+                  type: string
             Login:
               type: object
               description: login user
@@ -267,12 +356,11 @@ Resources:
                   type: string
                 password:
                   type: string
-            GetUsers:
+
+            Task:
               type: object
-              description: get all tasks
+              description: create task
               properties:
-                userName:
-                  type: string
                 userId:
                   type: string
                 tasks:
@@ -286,6 +374,25 @@ Resources:
                         type: string
                       status:
                         type: string
+
+            GetUsers:
+              type: object
+              description: get all tasks
+              properties:
+                userId:
+                  type: string
+                tasks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      taskId:
+                        type: string
+                      taskName:
+                        type: string
+                      status:
+                        type: string
+
             UpdateTask:
               type: object
               description: Update user task    
@@ -294,10 +401,17 @@ Resources:
                   type: string
                 taskId:
                   type: string 
-                taskName:
-                  type: string
                 status:
-                  type: string  
+                  type: string 
+
+            DeleteTask:
+              type: object
+              description: Update user task    
+              properties:
+                taskId:
+                  type: string 
+
+
             BadRequest:
               type: object
               properties:
@@ -358,16 +472,24 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/*
 
-
   LambdaInvokePermission3:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt TodoUsersGET.Arn
+      FunctionName: !GetAtt TodoCreateTask.Arn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/*
 
+
   LambdaInvokePermission4:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt TodoUserTasks.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/*
+
+  LambdaInvokePermission5:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !GetAtt TodoUpdateTask.Arn
@@ -375,7 +497,7 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TodoApi}/*/*/*
 
-  LambdaInvokePermission5:
+  LambdaInvokePermission6:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !GetAtt TodoDeleteTask.Arn
@@ -406,5 +528,19 @@ Resources:
         - AttributeName: "userId"
           KeyType: "HASH"
       ProvisionedThroughput: 
+        ReadCapacityUnits: "3"
+        WriteCapacityUnits: "3"    
+
+  UserTask:
+    Type: Aws::DynamoDB::Table
+    Properties:
+      TableName: "Todo-task"
+      AttributeDefinitions:
+        - AttributeName: "userId"
+          AttributeType: "S"
+      KeySchema: 
+        - AttributeName: "userId"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
         ReadCapacityUnits: "4"
-        WriteCapacityUnits: "4"    
+        WriteCapacityUnits: "4" 

@@ -8,8 +8,7 @@ class LoginUserService {
     }
     async loginUserByUserId(id) {
         let response = await this.todoRepository.loginUserByUserId(id);
-        let { userId, password } = response.Item;
-        return { userId, password };
+        return response.Item;
     }
 }
 exports.LoginUserService = LoginUserService;
