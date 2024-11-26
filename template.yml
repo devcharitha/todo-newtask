@@ -532,7 +532,7 @@ Resources:
         WriteCapacityUnits: "3"    
 
   UserTask:
-    Type: Aws::DynamoDB::Table
+    Type: AWS::DynamoDB::Table
     Properties:
       TableName: "Todo-task"
       AttributeDefinitions:
