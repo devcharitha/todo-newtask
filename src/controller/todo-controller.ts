@@ -22,13 +22,13 @@ const validationService = new ValidationService(loginUserService);
 
 const event = {
     // "headers": {
-    // "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5OWY3czMiLCJpYXQiOjE3MzA3OTIxODEsImV4cCI6MTczMDc5NTc4MX0.tIvriipBWDeGjH7yKvZBfOvyvHquZjfnzwgxlfArK-I"
+    // "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJwNWs3ajYiLCJpYXQiOjE3MzI2MTE1MjgsImV4cCI6MTczMjYxNTEyOH0.1U6oW2ZHqBSMuY3lcUQnlUORzLLaBIbJJF1op6rGpNk"
     // },
     // httpMethod:"GET",
     // resource: "/getUsers/{userId}",
     // pathParameters: { userId: "y9f7s5" },
     // body:"{\"taskId\":\"0989b3c0-0e38-4ff2-b8c3-03834542363b\"}"
-    // body: "{\"taskId\":\"ab7b865e-5943-429c-8851-fda05dde65d7\",\"taskName\":\"coding\",\"status\":\"Complete\"}"
+    // body: "{\"userId\":\"p5k7j6\",\"taskName\":\"Interview\",\"status\":\"Incomplete\"}"
     // body: "{\"userId\":\"k8l8t6\",\"password\":\"Charitha@18\"}"
     // body:"{\"userName\":\"Charithad\",\"userId\":\"k8l8t6\",\"password\":\"Charitha@18\",\"taskName\":\"Give Assessment\",\"status\":\"Incomplete\"}"
 
@@ -98,7 +98,7 @@ export const createTaskHandler = async (event) => {
         validationService.validateTaskName(requestBody.taskName);
         validationService.validateStatus(requestBody.status);
 
-        const taskDetails = {
+        const taskDetails : TaskDetails= {
             taskId: uuidv4(),
             taskName: requestBody.taskName,
             status: requestBody.status
@@ -125,7 +125,7 @@ export const createTaskHandler = async (event) => {
         }
     }
 };
-
+// createTaskHandler(event);
 
 export const loginUserHandler = async (event) => {
     const requestBody = JSON.parse(event.body);

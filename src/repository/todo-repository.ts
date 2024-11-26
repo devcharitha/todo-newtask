@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, DynamoDBDocumentClient, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { UserTasks, TodoUserDetails, TaskDetails } from "../model/todo-model";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -52,14 +52,17 @@ export class TodoRepository {
                 taskName: requestBody.taskName,
                 status: requestBody.status
             };
-            const existingTasks = response.Item.tasks || [];
-            const updatedTasks = [...existingTasks, newTask];
-            const command1 = new PutCommand({
+            const command1 = new UpdateCommand({
                 TableName: "Todo-task",
-                Item: {
-                    userId: response.Item.userId,
-                    tasks: updatedTasks
-                }
+                Key: {
+                    userId: response.Item.userId
+                },
+                UpdateExpression: "SET tasks = list_append(if_not_exists(tasks, :empty_list), :new_task)",
+                ExpressionAttributeValues: {
+                    ":new_task": [newTask],
+                    ":empty_list": []
+                },
+                ReturnValues: "UPDATED_NEW"
             });
             const res: any = await this.docClient.send(command1);
             console.log("Create Task Response:", res);

@@ -49,14 +49,17 @@ class TodoRepository {
                 taskName: requestBody.taskName,
                 status: requestBody.status
             };
-            const existingTasks = response.Item.tasks || [];
-            const updatedTasks = [...existingTasks, newTask];
-            const command1 = new lib_dynamodb_1.PutCommand({
+            const command1 = new lib_dynamodb_1.UpdateCommand({
                 TableName: "Todo-task",
-                Item: {
-                    userId: response.Item.userId,
-                    tasks: updatedTasks
-                }
+                Key: {
+                    userId: response.Item.userId
+                },
+                UpdateExpression: "SET tasks = list_append(if_not_exists(tasks, :empty_list), :new_task)",
+                ExpressionAttributeValues: {
+                    ":new_task": [newTask],
+                    ":empty_list": []
+                },
+                ReturnValues: "UPDATED_NEW"
             });
             const res = await this.docClient.send(command1);
             console.log("Create Task Response:", res);
