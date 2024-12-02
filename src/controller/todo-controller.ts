@@ -22,11 +22,11 @@ const validationService = new ValidationService(loginUserService);
 
 const event = {
     // "headers": {
-    // "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJwNWs3ajYiLCJpYXQiOjE3MzI2MTE1MjgsImV4cCI6MTczMjYxNTEyOH0.1U6oW2ZHqBSMuY3lcUQnlUORzLLaBIbJJF1op6rGpNk"
+    // "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhamFsMTIzIiwiaWF0IjoxNzMyNjI0ODEyLCJleHAiOjE3MzI2Mjg0MTJ9.09XY-PcRfXWU6wJEoz7zPt9OxpoOR1Pyp26xnbhVFm8"
     // },
     // httpMethod:"GET",
-    // resource: "/getUsers/{userId}",
-    // pathParameters: { userId: "y9f7s5" },
+    // resource: "/getUserTasks/{userId}",
+    // pathParameters: { userId: "ajal123" }
     // body:"{\"taskId\":\"0989b3c0-0e38-4ff2-b8c3-03834542363b\"}"
     // body: "{\"userId\":\"p5k7j6\",\"taskName\":\"Interview\",\"status\":\"Incomplete\"}"
     // body: "{\"userId\":\"k8l8t6\",\"password\":\"Charitha@18\"}"
@@ -110,7 +110,7 @@ export const createTaskHandler = async (event) => {
         return response;
 
     } catch (error) {
-        if (error.message === "Invalid UserId format") {
+        if (error.message === "Invalid UserId format" || error.message === "Invalid TaskName format" || error.message === "Invalid status content") {
             let userIdResponse = buildErrorResponse(400, error.message);
             console.log(userIdResponse);
             return userIdResponse;
@@ -183,7 +183,7 @@ export const getUserTasksHandler = async (event) => {
                 return buildErrorResponse(404, "userId not found");
             }
 
-            let userTasks = buildUserResponse(200, 'Retrieved all tasks of user', JSON.stringify(tasks));
+            let userTasks = buildUserResponse(200, 'Retrieved all tasks of user',tasks);
             console.log(userTasks);
             return userTasks;
         } catch (error) {

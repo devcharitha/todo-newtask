@@ -99,7 +99,7 @@ Resources:
           title: Todo-task
           description: adding users and revewing the tasks in the list
         paths: 
-          /createUser:
+          /create-user:
             post:
               description: creating user
               requestBody:
@@ -127,7 +127,7 @@ Resources:
                   passthroughBehavior: "when_no_match"
                   httpMethod: "POST"
                   type: "aws_proxy"
-          /loginUser:
+          /login-user:
             post:
               description: login user with proper credentials
               requestBody:
@@ -176,7 +176,7 @@ Resources:
                   httpMethod: "POST"
                   type: "aws_proxy"
 
-          /createTask:
+          /create-task:
             post:
               description: create a task for a user using userId.
               requestBody:
@@ -211,7 +211,7 @@ Resources:
                   httpMethod: "POST"
                   type: "aws_proxy"
 
-          /getUserTasks/{userId}:
+          /user-tasks/{userId}:
             get:
               description: Get user tasks.
               parameters:
